@@ -6,12 +6,19 @@ import { dirname } from "node:path";
 import { fileURLToPath } from "url";
 import { createServer } from "http";
 import router from "./routes.js";
+import {
+  getCurrentUser,
+  getRoomUsers,
+  userJoin,
+  userLeave,
+} from "./utils/users.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
 app.use(bodyParser.json());
+app.use(bodyParser.text());
 app.use(
   bodyParser.urlencoded({
     extended: true,
@@ -35,6 +42,8 @@ app.get("/test", (req, res) => {
 });
 
 app.post("/matrix", (req, res) => {
+  console.log("MATRIX: ");
+  console.log(req);
   console.log(req.body);
 
   return res.send(200);
@@ -45,8 +54,56 @@ const io = new Server(httpServer, {});
 
 io.on("connection", (socket) => {
   console.log("Connected user id: " + socket.id);
+
+  socket.on("guess", (guess) => {
+    const user = getCurrentUser(socket.id);
+
+    io.to(user.room).emit("message", formatMessage(user.username, guess));
+  });
+
+  socket.on("startRound", ({ room }) => {
+    const drawer = selectDrawer();
+    const prompt = selectPrompt();
+  });
+
+  socket.on("joinRoom", ({ username, room }) => {
+    const user = userJoin(socket.id, username, room);
+    socket.join(user.room);
+
+    // Broadcast when a user connects
+    socket.broadcast
+      .to(user.room)
+      .emit("moderator-message", `${user.username} has joined the chat`);
+
+    // Send users and room info
+    io.to(user.room).emit("roomUsers", {
+      room: user.room,
+      users: getRoomUsers(user.room),
+    });
+  });
+
+  socket.on("disconnect", () => {
+    const user = userLeave(socket.id);
+
+    if (user) {
+      io.to(user.room).emit(
+        "moderator-message",
+        `${user.username} has left the chat`
+      );
+
+      // Send users and room info
+      io.to(user.room).emit("roomUsers", {
+        room: user.room,
+        users: getRoomUsers(user.room),
+      });
+    }
+
+    console.log("user " + socket.id + " left the game");
+  });
 });
 
-httpServer.listen(process.env.PORT || 3000);
+function formatMessage(username, text) {
+  return { username: username, text: text };
+}
 
-// app.listen(process.env.PORT || 3000);
+httpServer.listen(process.env.PORT || 3000);
