@@ -17,7 +17,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
-app.use(bodyParser.json());
 app.use(bodyParser.text());
 app.use(
   bodyParser.urlencoded({
