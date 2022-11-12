@@ -1,7 +1,13 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const path = require("node:path");
-const router = require("./routes");
+import express from "express";
+import bodyParser from "body-parser";
+import { resolve } from "node:path";
+import { Server } from "socket.io";
+import { dirname } from "node:path";
+import { fileURLToPath } from "url";
+import { createServer } from "http";
+import router from "./routes.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
@@ -16,9 +22,18 @@ app.use(express.static("public"));
 app.use(express.static("./"));
 
 app.get("/", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "../public/html/index.html"));
+  res.sendFile(resolve(__dirname, "../public/html/index.html"));
 });
 
 app.use("/", router);
 
-app.listen(process.env.PORT || 3000);
+const httpServer = createServer(app);
+const io = new Server(httpServer, {});
+
+io.on("connection", (socket) => {
+  console.log("Connected user id: " + socket.id);
+});
+
+httpServer.listen(process.env.PORT || 3000);
+
+// app.listen(process.env.PORT || 3000);
