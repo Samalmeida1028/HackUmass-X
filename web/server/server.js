@@ -26,7 +26,13 @@ app.get("/", (req, res) => {
 });
 
 app.use("/", router);
+app.get("/test", (req, res) => {
+  console.log("TEST SUCCESS");
 
+  const resp = { name: "Ballmeida", role: "bozo" };
+
+  return res.send(resp);
+});
 const httpServer = createServer(app);
 const io = new Server(httpServer, {});
 
