@@ -33,6 +33,13 @@ app.get("/test", (req, res) => {
 
   return res.send(resp);
 });
+
+app.post("/matrix", (req, res) => {
+  console.log(req.body);
+
+  return res.send(200);
+});
+
 const httpServer = createServer(app);
 const io = new Server(httpServer, {});
 
