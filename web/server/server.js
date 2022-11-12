@@ -43,7 +43,6 @@ app.get("/test", (req, res) => {
 
 app.post("/matrix", (req, res) => {
   console.log("MATRIX: ");
-  console.log(req);
   console.log(req.body);
 
   return res.send(200);
