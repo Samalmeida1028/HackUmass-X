@@ -80,7 +80,7 @@ void httpPOST(const char* serverName, String payload) {
 
   // Your IP address with path or Domain name with URL path 
   http.begin(client, serverName);
-  http.addHeader("Content-Type", "application/json");
+  http.addHeader("Content-Type", "text/plain");
 
   // Send HTTP POST request
   int httpResponseCode = http.POST(payload);
@@ -137,18 +137,17 @@ void test()
       String test = httpGETRequest(serverName);
       delay(500);
       Serial.println(test);
-      for(int i = 0; i < 32; i++){
-        for(int j = 0; j < 16; j++){
+      for(int i = 0; i < 16; i++){
+        for(int j = 0; j < 8; j++){
           leds[convertToLED(i, j)] = CRGB::White; 
           FastLED.show(); 
-          delay(speedd);
-          String lit = GetPixelsLit();
-          httpPOST("http://68.183.25.122:3000/matrix", lit);
           //Serial.println(lit);
           //leds[convertToLED(i, j)] = CRGB::Black;
           //FastLED.show(); 
         }
       }
+          String lit = GetPixelsLit();
+          httpPOST("http://68.183.25.122:3000/matrix", lit);
 }
 
   
