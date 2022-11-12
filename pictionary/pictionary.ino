@@ -6,11 +6,11 @@ November 11-13, 2022
 
 // Global Variables
 #include "FastLED.h"
-
-CRGB leds[1];
+#define FASTLED_ESP8266_D1_PIN_ORDER
 #define NUM_LEDS 256
-#define DATA_PIN D1
-int ledsa[NUM_LEDS];
+CRGB leds[NUM_LEDS];
+#define NUM_LEDS 256
+#define DATA_PIN 5
 const int larray[32][8]= {
   {0,1,2,3,4,5,6,7},{15,14,13,12,11,10,9,8},{16,17,18,19,20,21,22,23},{31,30,29,28,27,26,25,24},
   {32,33,34,35,36,37,38,39},{47,46,45,44,43,42,41,40},{48,49,50,51,52,53,54,55},{63,62,61,60,59,58,57,56},
@@ -31,7 +31,7 @@ char request[] = "link";
 
 void setup() {
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS); 
-  FastLED.setBrightness(10);
+  FastLED.setBrightness(100);
   // put your setup code here, to run once:
 
   
@@ -41,6 +41,12 @@ void setup() {
 }
 
 void loop() {
+      for(int i = 0; i<129; i++){
+        leds[i] = CRGB::Magenta;
+        leds[256-i] = CRGB::Magenta;FastLED.show();
+        leds[i] = CRGB::Black;
+        leds[256-i] = CRGB::Black;
+      }
   // put your main code here, to run repeatedly:
 
 }
