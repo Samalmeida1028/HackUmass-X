@@ -1,6 +1,7 @@
 import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
 
 const guessForm = document.getElementById("guess-form");
+const startButton = document.getElementById("start-button");
 const userList = document.getElementById("users");
 const socket = io("ws://localhost:3000");
 
@@ -10,7 +11,7 @@ if (!username) {
   username = window.prompt("Enter your username", "Username");
 
   if (!username || username === "") {
-    username = "Username";
+    username = "User";
   }
 
   //   localStorage.setItem("username", username);
@@ -31,6 +32,14 @@ socket.on("moderator-message", (message) => {
 socket.on("message", (message) => {
   console.log(message);
   outputMessage(message);
+});
+
+startButton.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  console.log("Start");
+
+  socket.emit("startRound");
 });
 
 guessForm.addEventListener("submit", (e) => {
