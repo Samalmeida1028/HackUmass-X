@@ -9,7 +9,7 @@
 #include "FastLED.h"
 #include "Functions.h"
 
-#define while (a) while ((yield(), a))
+#define while(a) while((yield(), a))
 #define FASTLED_ESP8266_D1_PIN_ORDER
 #define NUM_LEDS 512
 #define DATA_PIN 14
@@ -90,8 +90,8 @@ void loop()
   display.clearDisplay();
   display.display();
   displayPrompt(prompt);
-  String temp = prompt;
-  while (prompt = temp)
+  String lastPrompt = prompt;
+  while (prompt == lastPrompt)
   {
     Serial.println(prompt);
     draw();
@@ -109,24 +109,6 @@ void loop()
     Serial.println(prompt);
     display.clearDisplay();
     display.display();
-  }
-  else
-  {
-
-    draw();
-    getButtonInputs();
-    count++;
-    if (count > 20)
-    {
-      prompt = getPrompt();
-      displayPrompt(prompt);
-      // char payload[] = httpGETRequest(serverName); // getting how much time is left from server
-      timeleft -= 1;
-      String litLeds = GetPixelsLit();
-      httpPOST(serverName, litLeds);
-      count = 0;
-    }
-    lastPrompt = prompt;
   }
 }
 
