@@ -33,4 +33,16 @@ String GetPixelsLit();
  */
 String GetPixelVal(int x, int y);
 
-void test();
+void rst();
+
+void timer();
+
+void getxdir(int val);
+
+void getydir(int val);
+
+void checklimits();
+
+void handlepointer();
+
+void getButtonInputs();
