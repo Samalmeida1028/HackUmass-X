@@ -125,11 +125,9 @@ function updateCanvas(matrix) {
   ctx.beginPath();
 
   matrix.forEach((pixel) => {
-    if (pixel.hex !== "$ffffff") {
-      console.log(pixel.hex);
+    if (pixel.hex !== "#ffffff") {
       ctx.fillStyle = pixel.hex;
     } else {
-      console.log(pixel.hex);
       ctx.fillStyle = "#000000";
     }
     ctx.fillRect(
