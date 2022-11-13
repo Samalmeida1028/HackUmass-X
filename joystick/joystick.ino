@@ -36,7 +36,7 @@ int pinvals[4];
 
 char request[] = "link";
 
-void setup() {
+void setup() { // initializing all pins used on Arduino
   // put your setup code here, to run once:
   Serial.begin(9600);
 
@@ -56,96 +56,96 @@ void loop() {
   
   pinvals[3] = 1;
 
-  // Straight down
-  if((xval < 100) && (yval < 600 && yval > 400))
+  // nothing pressed
+  if((xval < 800 && xval > 200) && (yval < 800 && yval > 200))
   {
-    //0
-    pinvals[0] = 0;
-    pinvals[1] = 0;
-    pinvals[2] = 0;
+    pinvals[3] = 0; // player not touching joystick
   }
-  // Down left
-  else if((xval < 100) && (yval < 100))
-  {
-    // 1
-    pinvals[0] = 0;
-    pinvals[1] = 0;
-    pinvals[2] = 1;
-  }
-  // left
-  else if((xval > 400 && xval < 600) && (yval < 100))
+  // right
+  else if((xval < 800 && xval > 200) && (yval < 200))
   {
     // 2
     pinvals[0] = 0;
     pinvals[1] = 1;
     pinvals[2] = 0;
   }
-  // up left
-  else if((xval > 950) && (yval < 100))
+  // up
+  else if((xval < 100) && (yval < 530 && yval > 470))
+  {
+    //0
+    pinvals[0] = 0;
+    pinvals[1] = 0;
+    pinvals[2] = 0;
+  }
+  // up right
+  else if((xval < 500) && (yval < 50))
+  {
+    // 1
+    pinvals[0] = 0;
+    pinvals[1] = 0;
+    pinvals[2] = 1;
+  }
+  // down right
+  else if((xval > 1000) && (yval < 50))
   {
     // 3
     pinvals[0] = 0;
     pinvals[1] = 1;
     pinvals[2] = 1;
   }
-  // up
-  else if((xval > 950) && (yval < 600 && yval > 400))
+  // Straight down
+  else if((xval > 900) && (yval < 530 && yval > 470))
   {
     // 4
     pinvals[0] = 1;
     pinvals[1] = 0;
     pinvals[2] = 0;
   }
-  // up right
-  else if((xval > 950) && (yval > 950))
+  // down left
+  else if((xval > 1000) && (yval > 1000))
   {
     // 5
     pinvals[0] = 1;
     pinvals[1] = 0;
     pinvals[2] = 1;
   }
-  // right
-  else if((yval > 950) && (xval < 600 && xval > 400))
+  // left
+  else if((yval > 900) && (xval < 700 && xval > 300))
   {
     // 6
     pinvals[0] = 1;
     pinvals[1] = 1;
     pinvals[2] = 0;
   }
-  // down right
-  else if((xval < 100) && (yval > 950))
+  // up left
+  else if((xval < 50) && (yval > 1000))
   {
     // 7
     pinvals[0] = 1;
     pinvals[1] = 1;
     pinvals[2] = 1;
+  } else {
+    pinvals[3] = 0;
   }
-  // nothing pressed
-  else if((xval < 600 && xval > 400) && (yval < 600 && yval > 400))
-  {
-    pinvals[3] = 0; // player not touching joystick
-  }
+  
 
   // printing output to digital pins
 
   unsigned char i;
   for(i = 0; i < 4; i++)
   {
+    Serial.print(pinvals[i]);
     if(pinvals[i] == 0)
     {
       digitalWrite(pins[i], LOW);
-      Serial.print(0);
     } else if (pinvals[i] == 1)
     {
       digitalWrite(pins[i], HIGH);
-      Serial.print(1);
       pinvals[i] = 0; // setting back to 0 for reset
     }
   }
   Serial.print("\n");
-  
-  
-  
+
   delay(100);
 }
 
