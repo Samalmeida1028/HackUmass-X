@@ -5,7 +5,6 @@ import { Server } from "socket.io";
 import { dirname } from "node:path";
 import { fileURLToPath } from "url";
 import { createServer } from "http";
-import router from "./routes.js";
 import {
   getCurrentUser,
   getDrawerByRoom,
@@ -16,9 +15,11 @@ import {
 } from "./utils/users.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-
+let matrix;
+let timeLeft = 60;
 const startRound = new Map();
 
+let prompt = "";
 const app = express();
 
 app.use(bodyParser.text());
@@ -35,7 +36,6 @@ app.get("/", (req, res) => {
   res.sendFile(resolve(__dirname, "../public/html/index.html"));
 });
 
-app.use("/", router);
 app.get("/test", (req, res) => {
   console.log("TEST SUCCESS");
 
@@ -44,10 +44,15 @@ app.get("/test", (req, res) => {
   return res.send(resp);
 });
 
+app.get("/start", (req, res) => {
+  console.log("TEST SUCCESS");
+  if (startRound.get()) return res.send(resp);
+});
+
 app.post("/matrix", (req, res) => {
   console.log("MATRIX: ");
   console.log(req.body);
-
+  matrix = JSON.parse(req.body);
   return res.send(200);
 });
 
@@ -66,16 +71,47 @@ io.on("connection", (socket) => {
   socket.on("startRound", () => {
     const user = getCurrentUser(socket.id);
     // console.log(user);
+    if (!startRound.get(user.room)) {
+      socket.broadcast
+        .to(user.room)
+        .emit("moderator-message", "Round Starting");
+      startRound.set(user.room, true);
+      const drawer = selectDrawer(user.room);
 
-    socket.broadcast.to(user.room).emit("moderator-message", "Round Starting");
-    startRound.set(user.room, true);
-    const drawer = selectDrawer(user.room);
-    console.log(drawer);
-    const prompt = selectPrompt();
-    socket.broadcast
-      .to(user.room)
-      .emit("moderator-message", `${drawer.username} is drawing`);
-    io.to(drawer.id).emit("moderator-message", "You are drawing: " + prompt);
+      const prompt = selectPrompt();
+
+      if (drawer) {
+        socket.broadcast
+          .to(user.room)
+          .emit("moderator-message", `${drawer.username} is drawing`);
+        io.to(drawer.id).emit(
+          "moderator-message",
+          "You are drawing: " + prompt
+        );
+      }
+
+      io.to(user.room).emit("started");
+      startTimer();
+      function startTimer() {
+        timeLeft = 60;
+        function countdown() {
+          timeLeft--;
+          io.to(user.room).emit("timer", {
+            timeLeft: timeLeft,
+            matrix: matrix,
+          });
+          if (timeLeft > 0) {
+            setTimeout(countdown, 1000);
+            io.to(user.room).emit("round-over", {
+              timeLeft: timeLeft,
+              matrix: matrix,
+            });
+          }
+        }
+
+        setTimeout(countdown, 1000);
+      }
+    }
   });
 
   socket.on("joinRoom", ({ username, room }) => {
@@ -85,8 +121,9 @@ io.on("connection", (socket) => {
     } else {
       if (startRound.get(room)) {
         const drawer = getDrawerByRoom(user.room);
-
-        socket.emit("moderator-message", drawer.username + " is drawing");
+        if (drawer) {
+          socket.emit("moderator-message", drawer.username + " is drawing");
+        }
       }
     }
     socket.join(user.room);
@@ -103,6 +140,10 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("restart", () => {
+    console.log("restart");
+  });
+
   socket.on("disconnect", () => {
     const user = userLeave(socket.id);
 
@@ -116,6 +157,7 @@ io.on("connection", (socket) => {
 
       if (users.length === 0) {
         startRound.delete(user.room);
+        timeLeft = 0;
       }
 
       // Send users and room info

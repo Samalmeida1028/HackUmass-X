@@ -2,10 +2,12 @@ import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
 
 const guessForm = document.getElementById("guess-form");
 const startButton = document.getElementById("start-button");
+const timer = document.getElementById("timer");
+const restartButton = document.getElementById("restart-button");
 const userList = document.getElementById("users");
 const socket = io("ws://localhost:3000");
 
-let username = localStorage.getItem("username");
+let username = undefined;
 
 if (!username) {
   username = window.prompt("Enter your username", "Username");
@@ -13,15 +15,25 @@ if (!username) {
   if (!username || username === "") {
     username = "User";
   }
-
-  //   localStorage.setItem("username", username);
 }
+
 const room = "baseRoom";
+let started = false;
 
 socket.emit("joinRoom", { username, room });
 
-socket.on("roomUsers", ({ room, users }) => {
+socket.on("roomUsers", ({ users }) => {
   outputUsers(users);
+});
+
+socket.on("started", () => {
+  startButton.disabled = true;
+  started = true;
+  //   startTimer();
+});
+socket.on("timer", (resp) => {
+  timer.innerHTML = String(resp.timeLeft);
+  updateCanvas(resp.matrix);
 });
 
 socket.on("moderator-message", (message) => {
@@ -34,12 +46,21 @@ socket.on("message", (message) => {
   outputMessage(message);
 });
 
-startButton.addEventListener("click", (e) => {
+restartButton.addEventListener("click", (e) => {
   e.preventDefault();
 
-  console.log("Start");
+  socket.emit("restart");
+});
 
-  socket.emit("startRound");
+startButton.addEventListener("click", (e) => {
+  e.preventDefault();
+  if (!started) {
+    console.log("Start");
+
+    socket.emit("startRound");
+  } else {
+    startButton.disabled = true;
+  }
 });
 
 guessForm.addEventListener("submit", (e) => {
@@ -84,7 +105,6 @@ function outputModMessage(message) {
   document.getElementById("chat-box").appendChild(div);
 }
 
-// Add users to DOM
 function outputUsers(users) {
   userList.innerHTML = "";
   users.forEach((user) => {
@@ -92,4 +112,25 @@ function outputUsers(users) {
     li.innerText = user.username;
     userList.appendChild(li);
   });
+}
+
+function updateCanvas(matrix) {
+  if (matrix === undefined) {
+    return;
+  }
+
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  ctx.beginPath();
+
+  matrix.forEach((pixel) => {
+    ctx.rect(
+      pixel.coord.y * 40,
+      pixel.coord.x * 20,
+      canvas.height / 40,
+      canvas.width / 40
+    );
+  });
+  ctx.fill();
+  ctx.closePath();
 }
