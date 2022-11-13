@@ -1,6 +1,9 @@
 # HackUmass-X
 Repository for our HackUmass-X Project!
 
+## Join the IP to take a look!
+    http://68.183.25.122:3000/
+    
 ## How the Code Works Together
 
   There are two files that work together to bring Pictionary to life on the client side, which are pictionary_game.ino and joystick.ino.
