@@ -34,7 +34,7 @@ const prompts = [
 ];
 let timeLeft = totalTime;
 const startRound = new Map();
-
+const room = "baseRoom";
 let prompt = "";
 const app = express();
 
@@ -52,21 +52,25 @@ app.get("/", (req, res) => {
   res.sendFile(resolve(__dirname, "../public/html/index.html"));
 });
 
-app.get("/time", (req, res) => {
-  console.log("TEST SUCCESS");
+// app.get("/time", (req, res) => {
+//   console.log("TEST SUCCESS");
 
-  const resp = { time: 49 };
+//   const resp = { time: 49 };
 
-  return res.send(resp);
-});
+//   return res.send(resp);
+// });
 
 app.get("/start", (req, res) => {
-  console.log("TEST SUCCESS");
-  //   if (startRound.get()) return res.send(resp);
+  console.log("START");
+  if (startRound.get(room)) {
+    return res.send(prompt ? prompt : "ERROR");
+  } else {
+    return res.status(400).send("Not started");
+  }
 });
 
 app.get("/prompts", (req, res) => {
-  return res.send(selectPrompt());
+  return res.send();
 });
 
 app.post("/matrix", (req, res) => {
@@ -95,10 +99,9 @@ io.on("connection", (socket) => {
       socket.broadcast
         .to(user.room)
         .emit("moderator-message", "Round Starting");
+      prompt = selectPrompt();
       startRound.set(user.room, true);
       const drawer = selectDrawer(user.room);
-
-      prompt = selectPrompt();
 
       if (drawer) {
         socket.broadcast
