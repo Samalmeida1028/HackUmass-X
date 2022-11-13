@@ -2,6 +2,8 @@ import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
 
 const guessForm = document.getElementById("guess-form");
 const startButton = document.getElementById("start-button");
+const timer = document.getElementById("timer");
+const restartButton = document.getElementById("restart-button");
 const userList = document.getElementById("users");
 const socket = io("ws://localhost:3000");
 
@@ -17,11 +19,21 @@ if (!username) {
   //   localStorage.setItem("username", username);
 }
 const room = "baseRoom";
+let started = false;
 
 socket.emit("joinRoom", { username, room });
 
-socket.on("roomUsers", ({ room, users }) => {
+socket.on("roomUsers", ({ users }) => {
   outputUsers(users);
+});
+
+socket.on("started", () => {
+  startButton.disabled = true;
+  started = true;
+  //   startTimer();
+});
+socket.on("timer", (resp) => {
+  timer.innerHTML = String(resp.timeLeft);
 });
 
 socket.on("moderator-message", (message) => {
@@ -34,12 +46,21 @@ socket.on("message", (message) => {
   outputMessage(message);
 });
 
-startButton.addEventListener("click", (e) => {
+restartButton.addEventListener("click", (e) => {
   e.preventDefault();
 
-  console.log("Start");
+  socket.emit("restart");
+});
 
-  socket.emit("startRound");
+startButton.addEventListener("click", (e) => {
+  e.preventDefault();
+  if (!started) {
+    console.log("Start");
+
+    socket.emit("startRound");
+  } else {
+    startButton.disabled = true;
+  }
 });
 
 guessForm.addEventListener("submit", (e) => {
