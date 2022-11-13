@@ -31,6 +31,33 @@ const prompts = [
   "house",
   "fish",
   "pizza",
+  "fire",
+  "sword",
+  "manure",
+  "flower",
+  "can",
+  "rock",
+  "smile",
+  "worm",
+  "snake",
+  "key",
+  "lock",
+  "mug",
+  "bowl",
+  "tv",
+  "bone",
+  "ruler",
+  "phone",
+  "spaghetti",
+  "shark",
+  "plant",
+  "book",
+  "chair",
+  "hat",
+  "shirt",
+  "pants",
+  "shoes",
+  "underwear",
 ];
 let timeLeft = totalTime;
 const startRound = new Map();
@@ -89,7 +116,7 @@ io.on("connection", (socket) => {
   socket.on("guess", (guess) => {
     const user = getCurrentUser(socket.id);
     if (prompt) {
-      if (guess === prompt) {
+      if (prompt.includes(guess)) {
         socket.emit("correct-guess");
         socket.emit("moderator-message", "You got the answer correct!");
         io.to(user.room).emit(
