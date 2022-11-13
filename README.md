@@ -20,9 +20,9 @@ Repository for our HackUmass-X Project!
   All LED indexes that are not black (off) are sent to the server to be interpreted and put on display.
 
 ### Server and client side
-    The server utilizes websockets to synchronize multiple clients in the game lobby. The websockets update the canvas display on the webpage based on the value of the LED matrix that was POST-ed to the server.
+   The server utilizes websockets to synchronize multiple clients in the game lobby. The websockets update the canvas display on the webpage based on the value of the LED matrix that was POST-ed to the server.
     
-    The server tells the hardware when to reset and move to the next game round based on input from the client.
+   The server tells the hardware when to reset and move to the next game round based on input from the client.
 ## Functions and Brief Description
 
 ### String httpGETRequest(const char* serverName)
