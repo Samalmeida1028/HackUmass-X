@@ -7,8 +7,8 @@ const timer = document.getElementById("timer");
 const restartButton = document.getElementById("restart-button");
 
 const userList = document.getElementById("users");
-// const socket = io("ws://localhost:3000");
-const socket = io("ws://68.183.25.122:3000");
+const socket = io("ws://localhost:3000");
+// const socket = io("ws://68.183.25.122:3000");
 
 let username = undefined;
 
@@ -106,13 +106,13 @@ function outputMessage(message) {
   //   div.classList.add("message");
   const p = document.createElement("p");
   p.classList.add("meta");
-  p.innerText = message.username;
+  p.innerText = message.username + ": " + message.text;
 
   div.appendChild(p);
-  const para = document.createElement("p");
-  para.classList.add("text");
-  para.innerText = message.text;
-  div.appendChild(para);
+  //   const para = document.createElement("p");
+  //   para.classList.add("text");
+  //   para.innerText = message.text;
+  //   div.appendChild(para);
   const chatBox = document.getElementById("chat-box");
   chatBox.appendChild(div);
   chatBox.scrollTop = chatBox.scrollHeight;
