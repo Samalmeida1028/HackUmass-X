@@ -1,43 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Pictionary</title>
+    <title>Scuffed Pictionary</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=2.0,width=device-width" />
+
+    <!-- <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.css"
+    /> -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/yegor256/tacit@gh-pages/tacit-css-1.5.5.min.css"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
+    </style>
     <link rel="stylesheet" href="../css/style.css" />
     <script type="module" src="../js/script.js"></script>
   </head>
-  <body class="doodle">
+  <body>
     <div class="header">
-      <h2>Pictionary</h2>
-      <div id="timer"></div>
+      <h1>Scuffed Pictionary</h1>
+      <div>
+        Time Left:
+        <div id="timer">0</div>
+      </div>
     </div>
 
     <div class="row">
-      <div class="column side" style="background-color: #aaa">
+      <div class="column left">
         <div id="users"></div>
       </div>
-      <div class="column middle" style="background-color: #bbb">
+      <div class="column middle">
         <canvas id="canvas" width="640" height="640"></canvas>
       </div>
-      <div class="column side" style="background-color: #ccc">
-        <div id="chat-box"></div>
+      <div class="column right">
+        <div id="chat-box" class="chat-box"></div>
+
+        <form id="guess-form">
+          <div>
+            <div class="form-inputs">
+              <input
+                type="text"
+                id="guess-input"
+                type="text"
+                placeholder="Enter Guess"
+                required
+                autocomplete="off"
+                style="width: 60%"
+              />
+              <button id="guess-button" type="button" style="width: 40%">
+                Guess
+              </button>
+            </div>
+
+            <div class="form-buttons">
+              <button
+                id="start-button"
+                style="margin-right: 5%"
+                class="form-button"
+              >
+                Start Round
+              </button>
+              <button id="restart-button" class="form-button">End Round</button>
+            </div>
+          </div>
+        </form>
       </div>
-    </div>
-    <div class="footer">
-      <form id="guess-form">
-        <input
-          type="text"
-          id="guess"
-          type="text"
-          placeholder="Enter Guess"
-          required
-          autocomplete="off"
-        />
-        <button id="guess-button" type="button">Guess</button>
-      </form>
-      <button id="start-button">Start Round</button>
-      <button id="restart-button">End Round</button>
     </div>
   </body>
 </html>

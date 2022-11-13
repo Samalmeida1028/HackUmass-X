@@ -6,40 +6,116 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+html,
+body {
+  height: 100%;
+  max-width: none;
+  background-color: #858879;
+  padding: 0px;
+  margin: 0px;
+  font-family: "Roboto", sans-serif;
+}
+
+#root {
+  width: 100%;
+}
+
 /* Style the header */
 .header {
-  background-color: #f1f1f1;
-  padding: 30px;
   text-align: center;
-  font-size: 35px;
+}
+#timer {
+  font-size: 40px;
 }
 
 /* Create three unequal columns that floats next to each other */
 .column {
-  float: left;
   padding: 10px;
+  min-height: 670px;
+  margin-top: 1%;
+  margin-bottom: 1%;
+  border-radius: 2%;
 }
 
 /* Left and right column */
-.column.side {
-  width: 25%;
+.column.left {
+  width: 22.5%;
+  background-color: #d3d9bd;
+  margin-left: 1%;
 }
-
+ul {
+  list-style-type: none;
+}
+/* .labels {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  width: 100%;
+} */
+.column.right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+  width: 22.5%;
+  background-color: #d3d9bd;
+  /* margin-right: 1%; */
+  padding-left: 1%;
+}
+h1 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
 /* Middle column */
 .column.middle {
-  width: 50%;
+  width: 49%;
+  background-color: #bcc3a6;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 670px;
+  margin-right: 1%;
+  margin-left: 1%;
 }
 
 /* Clear floats after the columns */
-.row:after {
-  content: "";
-  display: table;
-  clear: both;
+.row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+/* .form-input {
+  width: 400px;
+}
+.form-button {
+  width: 45%;
+} */
+.form-inputs {
+  display: flex;
+  flex-direction: row;
+  align-items: left;
+  justify-content: left;
+  width: 90%;
+}
+.chat-box {
+  width: 90%;
+  margin: 5%;
+  flex-direction: column;
+  align-items: left;
+  align-self: left;
+  justify-content: left;
+  overflow-y: scroll;
+  max-height: 450px;
+  background-color: #bcc3a6;
+  padding: 5%;
 }
 
-/* Style the footer */
-.footer {
-  background-color: #f1f1f1;
-  padding: 10px;
-  text-align: center;
+.form-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: 5%;
+  width: 90%;
 }

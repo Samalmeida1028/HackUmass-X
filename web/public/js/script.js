@@ -1,14 +1,14 @@
 import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
 
-const guessForm = document.getElementById("guess-form");
 const guessButton = document.getElementById("guess-button");
+const guessInput = document.getElementById("guess-input");
 const startButton = document.getElementById("start-button");
 const timer = document.getElementById("timer");
 const restartButton = document.getElementById("restart-button");
-const nextButton = document.getElementById("next-button");
+
 const userList = document.getElementById("users");
-// const socket = io("ws://localhost:3000");
-const socket = io("ws://68.183.25.122:3000");
+const socket = io("ws://localhost:3000");
+// const socket = io("ws://68.183.25.122:3000");
 
 let username = undefined;
 
@@ -84,10 +84,10 @@ startButton.addEventListener("click", (e) => {
   }
 });
 
-guessForm.addEventListener("submit", (e) => {
+guessButton.addEventListener("click", (e) => {
   e.preventDefault();
 
-  let guess = e.target.elements.guess.value;
+  let guess = guessInput.value;
   guess = guess.trim();
   console.log(guess);
 
@@ -97,8 +97,8 @@ guessForm.addEventListener("submit", (e) => {
 
   socket.emit("guess", guess);
 
-  e.target.elements.guess.value = "";
-  e.target.elements.guess.focus();
+  guessInput.value = "";
+  guessInput.focus();
 });
 
 function outputMessage(message) {
@@ -113,7 +113,9 @@ function outputMessage(message) {
   para.classList.add("text");
   para.innerText = message.text;
   div.appendChild(para);
-  document.getElementById("chat-box").appendChild(div);
+  const chatBox = document.getElementById("chat-box");
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 function outputModMessage(message) {
@@ -123,7 +125,9 @@ function outputModMessage(message) {
   para.classList.add("mod-text");
   para.innerText = message;
   div.appendChild(para);
-  document.getElementById("chat-box").appendChild(div);
+  const chatBox = document.getElementById("chat-box");
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 function outputUsers(users) {
