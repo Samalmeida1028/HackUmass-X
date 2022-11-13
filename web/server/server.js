@@ -88,29 +88,40 @@ io.on("connection", (socket) => {
 
   socket.on("guess", (guess) => {
     const user = getCurrentUser(socket.id);
-
-    io.to(user.room).emit("message", formatMessage(user.username, guess));
+    if (prompt) {
+      if (guess === prompt) {
+        socket.emit("correct-guess");
+        socket.emit("moderator-message", "You got the answer correct!");
+        io.to(user.room).emit(
+          "moderator-message",
+          user.username + " got the answer!"
+        );
+      } else {
+        io.to(user.room).emit("message", formatMessage(user.username, guess));
+      }
+    }
   });
 
   socket.on("startRound", () => {
     const user = getCurrentUser(socket.id);
     console.log("starting");
-    if (!startRound.get(user.room)) {
-      socket.broadcast
-        .to(user.room)
-        .emit("moderator-message", "Round Starting");
+    reset();
+    if (!startRound.get(user.room) && prompt === undefined) {
+      io.to(user.room).emit("moderator-message", "Round Starting");
       prompt = selectPrompt();
       startRound.set(user.room, true);
       const drawer = selectDrawer(user.room);
 
       if (drawer) {
-        socket.broadcast
-          .to(user.room)
-          .emit("moderator-message", `${drawer.username} is drawing`);
+        io.to(user.room).emit(
+          "moderator-message",
+          `${drawer.username} is drawing`
+        );
         io.to(drawer.id).emit(
           "moderator-message",
           "You are drawing: " + prompt
         );
+        io.to(drawer.id).emit("is-drawer");
       }
 
       io.to(user.room).emit("started");
@@ -185,6 +196,7 @@ io.on("connection", (socket) => {
       if (users.length === 0) {
         startRound.delete(user.room);
         timeLeft = 0;
+        reset();
       }
 
       // Send users and room info
@@ -204,6 +216,10 @@ function formatMessage(username, text) {
 
 function selectPrompt() {
   return prompts[Math.floor(Math.random() * prompts.length)];
+}
+
+function reset() {
+  prompt = undefined;
 }
 
 // function generatePrompts() {

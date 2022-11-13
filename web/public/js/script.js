@@ -1,6 +1,7 @@
 import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
 
 const guessForm = document.getElementById("guess-form");
+const guessButton = document.getElementById("guess-button");
 const startButton = document.getElementById("start-button");
 const timer = document.getElementById("timer");
 const restartButton = document.getElementById("restart-button");
@@ -37,6 +38,8 @@ socket.on("round-over", (resp) => {
   startButton.disabled = false;
   startButton.innerHTML = "Next Round";
   started = false;
+  guessButton.innerHTML = "Guess";
+  guessButton.disabled = false;
 });
 
 socket.on("timer", (resp) => {
@@ -52,6 +55,17 @@ socket.on("moderator-message", (message) => {
 socket.on("message", (message) => {
   console.log(message);
   outputMessage(message);
+});
+
+socket.on("correct-guess", (message) => {
+  console.log("correct");
+  guessButton.disabled = true;
+  guessButton.innerHTML = "Correct!";
+});
+
+socket.on("is-drawer", () => {
+  guessButton.disabled = true;
+  guessButton.innerHTML = "Drawing";
 });
 
 restartButton.addEventListener("click", (e) => {
