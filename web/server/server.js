@@ -16,7 +16,7 @@ import {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 let matrix;
-const totalTime = 10;
+const totalTime = 60;
 const prompts = [
   "dog",
   "cat",
