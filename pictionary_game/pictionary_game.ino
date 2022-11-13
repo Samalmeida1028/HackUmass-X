@@ -80,6 +80,12 @@ void loop() {
   Serial.println(prompt);
   while(prompt == "{}"){
   prompt = getPrompt();
+  display.setTextSize(2);             // Normal 1:1 pixel scale
+  display.setTextColor(WHITE);        // Draw white text
+  display.setCursor(0,5);             // Start at top-left corner
+  display.println("WAITING");
+  display.display();
+  delay(500);
   }
   Serial.println(prompt);
   display.clearDisplay();
@@ -87,7 +93,7 @@ void loop() {
   displayPrompt(prompt);
   String temp = prompt;
   while(prompt = temp){
-  prompt = getPrompt();
+  Serial.println(prompt);
   draw();
   getButtonInputs();
   count++;
@@ -95,6 +101,7 @@ void loop() {
     //char payload[] = httpGETRequest(serverName); // getting how much time is left from server
     timeleft -= 1;
     String litLeds = GetPixelsLit();
+    prompt = getPrompt();
     httpPOST(serverName,litLeds);
     count = 0;
     }
@@ -128,11 +135,6 @@ void setup() {
 }
 
 String getPrompt(){
-  display.setTextSize(2);             // Normal 1:1 pixel scale
-  display.setTextColor(WHITE);        // Draw white text
-  display.setCursor(0,5);             // Start at top-left corner
-  display.println("WAITING");
-  display.display();
   String load = httpGET(serverName);
   return load;
 }
@@ -187,6 +189,7 @@ String httpGET(const char* serverName) {
   else {
     Serial.print("Error code: ");
     Serial.println(httpResponseCode);
+    payload = "{}";
   }
   // Free resources
   http.end();
