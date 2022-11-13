@@ -105,8 +105,8 @@ io.on("connection", (socket) => {
   socket.on("startRound", () => {
     const user = getCurrentUser(socket.id);
     console.log("starting");
-    reset();
-    if (!startRound.get(user.room) && prompt === undefined) {
+
+    if (!startRound.get(user.room)) {
       io.to(user.room).emit("moderator-message", "Round Starting");
       prompt = selectPrompt();
       startRound.set(user.room, true);
@@ -196,7 +196,6 @@ io.on("connection", (socket) => {
       if (users.length === 0) {
         startRound.delete(user.room);
         timeLeft = 0;
-        reset();
       }
 
       // Send users and room info
@@ -218,9 +217,9 @@ function selectPrompt() {
   return prompts[Math.floor(Math.random() * prompts.length)];
 }
 
-function reset() {
-  prompt = undefined;
-}
+// function reset() {
+//   prompt = undefined;
+// }
 
 // function generatePrompts() {
 //   const numPrompts = 3;
