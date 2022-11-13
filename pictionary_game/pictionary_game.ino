@@ -72,7 +72,7 @@ static const unsigned char PROGMEM logo_bmp[] =
      B01110000, B01110000,
      B00000000, B00110000};
 
-void setup()
+void setup() // sets up for wifi, fastLED, and OLED
 {
   Serial.begin(9600);
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
@@ -90,121 +90,40 @@ void setup()
   Serial.println(WiFi.localIP());
 
   Serial.println("Timer set to 5 seconds (timerDelay variable), it will take 5 seconds before publishing the first reading.");
-  // put your setup code here, to run once:
 
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
   {
     Serial.println(F("SSD1306 allocation failed"));
     for (;;)
-      ; // Don't proceed, loop forever
+      ;
   }
   display.clearDisplay();
   display.display();
 }
 
-
-String waitForPrompt(){
-  while(httpGET(serverName) == "{}"){ displayPrompt("WAITING") delay(100)};
-  return httpGET(serverName);
-}
-
-void resetLEDS(){
-  rst();
-}
-
-bool promptHasChanged(int count, String prompt){
-  if(count == 100){
-    Serial.println(httpGET(serverName));
-    return prompt != httpGET(serverName);
-  }
-  return prompt; 
-  
-}
-void loop() {
-  String prompt = waitForPrompt();
+void loop()
+{
+String prompt = waitForPrompt();
   displayPrompt(prompt);
   // jay told me to do this
-  resetLEDS();
   int count = 0;
-  while(!promptHasChanged(count, prompt)){
+  while (!promptHasChanged(count, prompt))
+  {
     draw();
-    count++;    
-    if((count > 100 ){
+    count++;
+    if (count > 100)
+    {
       count = 0;
-      String litLeds = GetPixelsLit();
-      httpPOST("http://68.183.25.122:3000/matrix",litLeds);
+      String litLeds = getPixelsLit();
+      httpPOST("http://68.183.25.122:3000/matrix", litLeds);
     }
   }
 }
 
-//void loop()
-//{
-//  display.clearDisplay();
-//  display.display();
-//  String prompt = getPrompt();
-//  Serial.println(prompt);
-//  while (prompt == "{}")
-//  {
-//    prompt = getPrompt();
-//    display.setTextSize(2);      // Normal 1:1 pixel scale
-//    display.setTextColor(WHITE); // Draw white text
-//    display.setCursor(0, 5);     // Start at top-left corner
-//    display.println("WAITING");
-//    display.display();
-//    delay(500);
-//  }
-//  Serial.println(prompt);
-//  display.clearDisplay();
-//  display.display();
-//  displayPrompt(prompt);
-//  String lastPrompt = prompt;
-//  while (prompt == lastPrompt)
-//  {
-//    pollnDraw();
-//  }
-//}
-
-
-//void pollnDraw(){
-//  Serial.println(prompt);
-//    draw();
-//    getButtonInputs();
-//    count++;
-//    if (count > 20)
-//    {
-//      // char payload[] = httpGETRequest(serverName); // getting how much time is left from server
-//      timeleft -= 1;
-//      String litLeds = GetPixelsLit();
-//      prompt = getPrompt();
-//      httpPOST(serverName, litLeds);
-//      count = 0;
-//    }
-//    Serial.println(prompt);
-//    displayPrompt(prompt);
-//    display.display();
-//}
-
-String getPrompt()
-{
-  String load = httpGET(serverName);
-  return load;
-}
-
-void displayPrompt(String inputString)
-{
-  display.clearDisplay();
-
-  display.setTextSize(3.5);    // Normal 1:1 pixel scale
-  display.setTextColor(WHITE); // Draw white text
-  display.setCursor(0, 5);     // Start at top-left corner
-  display.println(inputString);
-
-  display.display();
-}
 
 //#####WIFI FUNCTIONS####
 
-String httpGET(const char *serverName)
+String httpGET(const char *serverName) //gets data from the servers
 {
   WiFiClient client;
   HTTPClient http;
@@ -252,7 +171,6 @@ void httpPOST(const char *serverName, String payload)
 
 void draw()
 {
-
 
   CRGB colors[6] = {CRGB::White, CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::Yellow, CRGB::Yellow};
   // note: extra yellow added at end as with current conditional to get color would result in error
@@ -325,7 +243,7 @@ void handlepointer() // function handles pointer if erase, draw, or none of the 
   if (onoffbutton && drawerasebutton) // if in draw
   {
     leds[convertToLED(x, y)] = CRGB::White;
-    if (prevx != x || prevy != y)
+    if (prevx != x || prevy != y) // making sure to not overwrite white
     {
       leds[convertToLED(prevx, prevy)] = current;
     }
@@ -340,15 +258,6 @@ void handlepointer() // function handles pointer if erase, draw, or none of the 
   }
   else if (!onoffbutton)
   { // if user does not want to draw or erase restore previous color behind pointer
-    Serial.print(x);
-    Serial.print(" ");
-    Serial.print(y);
-    Serial.print(" | ");
-    Serial.print(prevx);
-    Serial.print(" ");
-    Serial.print(prevy);
-    Serial.print("\n");
-
     leds[convertToLED(prevx, prevy)] = prevcolor;
     prevcolor = leds[convertToLED(x, y)];
     leds[convertToLED(x, y)] = current;
@@ -375,7 +284,7 @@ void getButtonInputs()
 
 //##Conversion Functions##
 
-int convertToLED(int x, int y)
+int convertToLED(int x, int y) // converts a matrix dimension to the series of the led
 {
   int temp = 8 * x;
   if (y > 7)
@@ -395,14 +304,14 @@ int convertToLED(int x, int y)
   return temp;
 }
 
-String GetPixelVal(int x, int y)
+String getPixelVal(int x, int y) // gets rgb value in hex #RRGGBB
 {
   long HexRGB = ((long)leds[convertToLED(x, y)].r << 16) | ((long)leds[convertToLED(x, y)].g << 8) | (long)leds[convertToLED(x, y)].b; // get value and convert.
   String formatted = String(HexRGB, HEX);
   String zero = "000000";
   if (formatted != "0")
   {
-    int offset = 6 - formatted.length();
+    int offset = 6 - formatted.length(); // formats pixel to add leading zeros
     int temp = 0;
     while (temp < offset)
     {
@@ -416,7 +325,7 @@ String GetPixelVal(int x, int y)
   return zero;
 }
 
-String GetPixelsLit()
+String getPixelsLit() // returns all lit pixels in the graph
 {
   String jsonString = "[";
 
@@ -424,7 +333,7 @@ String GetPixelsLit()
   {
     for (int j = 0; j < 16; j++)
     {
-      String val = GetPixelVal(i, j);
+      String val = getPixelVal(i, j);
       if (val != "000000")
       {
         String temp = "{\"hex\":\"#" + val + "\",\"coord\":{\"x\":\"" + String(i, DEC) + "\",\"y\":\"" + String(15 - j, DEC) + "\"}},";
@@ -439,6 +348,48 @@ String GetPixelsLit()
 }
 
 //##MISC FUNCTIONS##
+
+
+String waitForPrompt()
+{
+  while (getPrompt() == "{}")// while prompt is equal to the original string in the http get request wait
+  {
+    displayPrompt("WAITING");// displays waiting on the OLED
+    delay(100);
+  };
+  return getPrompt(); // gets prompt from the 
+}
+
+
+bool promptHasChanged(int count, String prompt) 
+{
+  if (count == 50) //only checks every so often
+  {
+    Serial.println(httpGET(serverName));
+    return prompt != httpGET(serverName);
+  }
+  return 0;
+}
+
+String getPrompt() // receives a prompt from the server
+{
+  String load = httpGET(serverName);
+  return load;
+}
+
+
+void displayPrompt(String inputString)
+{
+  display.clearDisplay();
+
+  display.setTextSize(3.5);    // Normal 1:1 pixel scale
+  display.setTextColor(WHITE); // Draw white text
+  display.setCursor(0, 5);     // Start at top-left corner
+  display.println(inputString);
+
+  display.display();
+}
+
 void rst() // function to reset all squares
 {
   memset(&leds, CRGB::Black, 32 * 16);
