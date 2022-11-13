@@ -72,48 +72,6 @@ static const unsigned char PROGMEM logo_bmp[] =
      B01110000, B01110000,
      B00000000, B00110000};
 
-void loop()
-{
-  display.clearDisplay();
-  display.display();
-  String prompt = getPrompt();
-  Serial.println(prompt);
-  while (prompt == "{}")
-  {
-    prompt = getPrompt();
-    display.setTextSize(2);      // Normal 1:1 pixel scale
-    display.setTextColor(WHITE); // Draw white text
-    display.setCursor(0, 5);     // Start at top-left corner
-    display.println("WAITING");
-    display.display();
-    delay(500);
-  }
-  Serial.println(prompt);
-  display.clearDisplay();
-  display.display();
-  displayPrompt(prompt);
-  String lastPrompt = prompt;
-  while (prompt == lastPrompt)
-  {
-    Serial.println(prompt);
-    draw();
-    getButtonInputs();
-    count++;
-    if (count > 20)
-    {
-      // char payload[] = httpGETRequest(serverName); // getting how much time is left from server
-      timeleft -= 1;
-      String litLeds = GetPixelsLit();
-      prompt = getPrompt();
-      httpPOST(serverName, litLeds);
-      count = 0;
-    }
-    Serial.println(prompt);
-    displayPrompt(prompt);
-    display.display();
-  }
-}
-
 void setup()
 {
   Serial.begin(9600);
@@ -140,7 +98,88 @@ void setup()
     for (;;)
       ; // Don't proceed, loop forever
   }
+  display.clearDisplay();
+  display.display();
 }
+
+
+String waitForPrompt(){
+  while(httpGET(serverName) == "{}") displayPrompt("WAITING");
+  return httpGET(serverName);
+}
+
+void resetLEDS(){
+  rst();
+}
+
+bool promptHasChanged(int count, String prompt){
+  if(count == 20){
+    Serial.println(httpGET(serverName));
+    return prompt != httpGET(serverName);
+  }
+  
+}
+void loop() {
+  String prompt = waitForPrompt();
+  displayPrompt(prompt);
+  // jay told me to do this
+  resetLEDS();
+  int count = 0;
+  while(!promptHasChanged(count, prompt)){
+    draw();
+    count++;    
+    if((count %= 20) == 0){
+      httpPOST("http://68.183.25.122:3000/matrix",GetPixelsLit());
+    }
+  }
+}
+
+//void loop()
+//{
+//  display.clearDisplay();
+//  display.display();
+//  String prompt = getPrompt();
+//  Serial.println(prompt);
+//  while (prompt == "{}")
+//  {
+//    prompt = getPrompt();
+//    display.setTextSize(2);      // Normal 1:1 pixel scale
+//    display.setTextColor(WHITE); // Draw white text
+//    display.setCursor(0, 5);     // Start at top-left corner
+//    display.println("WAITING");
+//    display.display();
+//    delay(500);
+//  }
+//  Serial.println(prompt);
+//  display.clearDisplay();
+//  display.display();
+//  displayPrompt(prompt);
+//  String lastPrompt = prompt;
+//  while (prompt == lastPrompt)
+//  {
+//    pollnDraw();
+//  }
+//}
+
+
+//void pollnDraw(){
+//  Serial.println(prompt);
+//    draw();
+//    getButtonInputs();
+//    count++;
+//    if (count > 20)
+//    {
+//      // char payload[] = httpGETRequest(serverName); // getting how much time is left from server
+//      timeleft -= 1;
+//      String litLeds = GetPixelsLit();
+//      prompt = getPrompt();
+//      httpPOST(serverName, litLeds);
+//      count = 0;
+//    }
+//    Serial.println(prompt);
+//    displayPrompt(prompt);
+//    display.display();
+//}
 
 String getPrompt()
 {
@@ -211,7 +250,6 @@ void httpPOST(const char *serverName, String payload)
 void draw()
 {
 
-  timer();
 
   CRGB colors[6] = {CRGB::White, CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::Yellow, CRGB::Yellow};
   // note: extra yellow added at end as with current conditional to get color would result in error
