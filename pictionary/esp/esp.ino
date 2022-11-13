@@ -11,7 +11,7 @@ November 11-13, 2022
 #include "FastLED.h"
 #define FASTLED_ESP8266_D1_PIN_ORDER
 #define NUM_LEDS 512
-#define DATA_PIN 5
+#define DATA_PIN 14
 const char* ssid = "NoSignal";  
 const char* password = "calebpatsam";
 const char* serverName = "http://68.183.25.122:3000/matrix";
@@ -20,21 +20,24 @@ const char* serverName = "http://68.183.25.122:3000/matrix";
 #define drawerase 2
 
 // Define Global Variables
-int pins[4] = {14, 12, 13, 15};
+int pins[4] = {12, 13, 15, 16};
 int pinvals[4] = {0};
 
 int onoffbutton = 0; // draw is off initially (toggle)
 
 int drawerasebutton = 1; // set to draw initially (toggle)
 
-int x = 16;
 int y = 8;
+int x = 16;
 int count = 0;
 int prevx, prevy;
+
+int timeleft = 60;
 
 CRGB leds[NUM_LEDS];
 
 CRGB current = CRGB::White; // current color
+CRGB prevcolor = CRGB::Black;
 
 // End Global Variables
 
@@ -88,15 +91,28 @@ int convertToLED (int x, int y){
 
 void draw(){
 
-  // adding colors to end of screen
-  leds[convertToLED(31, 12)] = CRGB::White;
-  leds[convertToLED(31, 13)] = CRGB::Red;
-  leds[convertToLED(31, 14)] = CRGB::Green;
-  leds[convertToLED(31, 15)] = CRGB::Blue;
+  timer();
+
+  CRGB colors[6] = {CRGB::White, CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::Yellow, CRGB::Yellow};
+  // note: extra yellow added at end as with current conditional to get color would result in error
+
   
-  prevx = x;
-  prevy = y;
+  // adding colors to end of screen
   unsigned char k;
+  char l = -1;
+  for(k = 0; k < 16; k++)
+  {
+     if((int) k % 3 == 0)
+     {
+      l += 1;
+     }
+     leds[convertToLED(31, k)] = colors[l];
+  }
+  leds[convertToLED(31, 15)] = colors[l];
+  
+  prevy = y;
+  prevx = x;
+  
   for( k = 0; k < 4; k++) // getting input from arduino
   {
     pinvals[k] = digitalRead(pins[k]);
@@ -109,89 +125,27 @@ void draw(){
   if(!digitalRead(onoff)) // if on off button pressed
   {
     onoffbutton = !onoffbutton;
-    delay(20);
+    delay(50);
   }
   if(!digitalRead(drawerase)) // if draw erase button pressed
   {
     drawerasebutton = !drawerasebutton;
-    delay(20);
+    delay(50);
   }
-  if (pinvals[3] == 1)
+  if (pinvals[3] == 1) // if user is moving analog joystick, find new x and y values
   {
-    if(val == 7){ // down right
-      x = x + 1;
-      y = y + 1;}
-    else if(val == 6){ // right
-      x += 1;}
-    else if(val == 5){ // up right
-      x += 1;
-      y -= 1;}
-    else if(val == 4){ // up
-      y -= 1;}
-    else if(val == 3){ // up left
-      x -= 1;
-      y -= 1;}
-    else if(val == 2){ // left
-      x -= 1;}
-    else if(val == 1){ // down left
-      x -= 1;
-      y += 1;}
-    else if(val == 0){ // down
-      y += 1;}
+    getxdir(val);
+    getydir(val);
   }// if statement
-  // checking limits
-  if(x < 0)
-  {
-    x = 0;
-  }
-  else if (x > 31)
-  {
-    x = 31;
-  }
-  if(y < 0)
-  {
-    y = 0;
-  }
-  else if (y > 15)
-  {
-    y = 15;
-  }
 
-  if(x == 31 && y == 12) // player wants to be White
+  checklimits(); // correcting x and y if they are past thresholds of led matrix
+
+  if(x == 31) // if user is selecting a color
   {
-    current = CRGB::White;
-  }
-  else if(x == 31 && y == 13) // player wants to be red
-  {
-    current = CRGB::Red;
-  }
-  else if(x == 31 && y == 14) // player wants to be green
-  {
-    current = CRGB::Green;
-  }
-  else if(x == 31 && y == 15) // player wants to be blue
-  {
-    current = CRGB::Blue;
+    current = colors[(int) y / 3];
   }
   
-  if(onoffbutton && drawerasebutton) // if in draw
-  {
-    leds[convertToLED(x, y)] = CRGB::White; 
-    leds[convertToLED(prevx, prevy)] = current; 
-    
-  } else if (onoffbutton && !drawerasebutton){ // if erasing
-    leds[convertToLED(x, y)] = CRGB::White; 
-    leds[convertToLED(prevx, prevy)] = CRGB::Black; 
-    
-  } else if (!onoffbutton) { // if user does not want to draw or erase
-    leds[convertToLED(x, y)] = current;
-    if(prevx != x || prevy != y)
-    {
-      leds[convertToLED(prevx, prevy)] = CRGB::Black;
-    }
-  } else {
-    leds[convertToLED(x, y)] = current;
-  }
+  handlepointer();
   FastLED.show();
   
 
@@ -201,7 +155,19 @@ void draw(){
 
 String GetPixelVal(int x, int y){
     long HexRGB = ((long)leds[convertToLED(x,y)].r << 16) | ((long)leds[convertToLED(x,y)].g << 8 ) | (long)leds[convertToLED(x,y)].b; // get value and convert.
-    return String(HexRGB, HEX);
+    String formatted = String(HexRGB, HEX);
+    String zero = "000000";
+    if(formatted != "0"){
+      int offset = 6-formatted.length();
+      int temp = 0;
+      while(temp < offset){
+        temp++;
+      }
+      for(int i = temp; i<zero.length();i++){
+        zero[i] = formatted[i-temp];
+      }
+    }
+    return zero;
   }
 
 
@@ -257,7 +223,7 @@ void httpPOST(const char* serverName, String payload) {
         for(int i = 0; i < 32; i++){
         for(int j = 0; j < 16; j++){
           String val = GetPixelVal(i,j);
-          if(val!="0"){
+          if(val!="000000"){
           String temp = "{\"hex\":\"#" + val + "\",\"coord\":{\"x\":\"" + String(i,DEC) + "\",\"y\":\"" + String(15-j,DEC) + "\"}},";
           jsonString += temp;
           }
@@ -269,16 +235,103 @@ void httpPOST(const char* serverName, String payload) {
         return jsonString;
   }
 
+  void rst() // function to reset all squares
+  {
+    for(int i = 0; i < 32; i++){
+      for(int j = 0; j < 16; j++){
+        leds[convertToLED(i, j)] = CRGB::Black;
+      }
+    }
+    FastLED.show(); 
+  }
+
+  void timer() // prints how much time is left to led matrix
+  {
+    int val = (int) timeleft / 4;
+
+    unsigned char k;
+    for( k = 0; k < val + 1; k++)
+    {
+      leds[convertToLED(0, 15-k)] = CRGB::White;
+    }
+    for(k = val + 1; k <= 15; k++)
+    {
+      leds[convertToLED(0, 15-k)] = CRGB::Black; 
+    }
+  }
+  
+  void getxdir(int val) // changing x depending on direction
+  {
+    if(val == 7 || val == 1 || val == 0)
+    {
+      x -= 1;
+    } else if (val == 5 || val == 4 || val == 3){
+      x += 1;
+    }
+  }
+
+  void getydir(int val) // changes y depending on direction
+  {
+    if(val == 3 || val == 2 || val == 1)
+    {
+      y -= 1;
+    } else if (val == 7 || val == 6 || val == 5){
+      y += 1;
+    }
+  }
+
+  void checklimits() // making sure x and y are not going past borders
+  {
+    if(x < 0)
+    {
+      x = 0;
+    }
+    else if (x > 31)
+    {
+      x = 31;
+    }
+    if(y < 0)
+    {
+      y = 0;
+    }
+    else if (y > 15)
+    {
+      y = 15;
+    }
+  }
+
+  void handlepointer() // function handles pointer if erase, draw, or none of the above
+  {
+    if(onoffbutton && drawerasebutton) // if in draw
+    {
+      leds[convertToLED(x, y)] = CRGB::White; 
+      leds[convertToLED(prevx, prevy)] = current; 
+      
+    } else if (onoffbutton && !drawerasebutton){ // if erasing
+      leds[convertToLED(x, y)] = CRGB::White; 
+      leds[convertToLED(prevx, prevy)] = CRGB::Black; 
+      
+    } else if (!onoffbutton) { // if user does not want to draw or erase restore previous color behind pointer
+      leds[convertToLED(prevx, prevy)] = prevcolor;
+      prevcolor = leds[convertToLED(x, y)];
+      leds[convertToLED(x, y)] = current;
+    }
+  }
 
 
   void loop()
-{
+  {
   
   draw();
   count++;
   if(count>20){
-  String litLeds = GetPixelsLit();
-  httpPOST(serverName,litLeds);
-  count = 0;
+    //char payload[] = httpGETRequest(serverName); // getting how much time is left from server
+    timeleft -= 1;
+    
+    String litLeds = GetPixelsLit();
+    httpPOST(serverName,litLeds);
+    count = 0;
+    }
   }
-}
+
+  
