@@ -13,12 +13,6 @@ const char* serverName = "http://68.183.25.122:3000/test";
 
 CRGB leds[NUM_LEDS];
 int speedd = 500;
-
-
-// controls for analog joystick, buttons
-int pins[4] = {14, 12, 13, 15};
-int pinvals[4] = {0};
-int dir = 0;
   
   
 void setup() { 
@@ -31,13 +25,6 @@ void setup() {
     delay(500);
     Serial.print(".");
   }
-
-  unsigned char i;
-  for( i = 0; i < 4; i++) // initializing pins as input
-  {
-    pinMode(pins[i], INPUT);
-  }
- 
   Serial.println("");
   Serial.print("Connected to WiFi network with IP Address: ");
   Serial.println(WiFi.localIP());
@@ -127,7 +114,7 @@ void httpPOST(const char* serverName, String payload) {
   }
 
     String GetPixelsLit(){
-        String jsonString = "[";
+        String jsonString = "{pixels:[";
         
         for(int i = 0; i < 32; i++){
         for(int j = 0; j < 16; j++){
@@ -140,66 +127,27 @@ void httpPOST(const char* serverName, String payload) {
         }
         int len = jsonString.length()-1;
         jsonString.remove(len);
-        jsonString = jsonString + "]";
+        jsonString = jsonString + "]}";
         return jsonString;
   }
 
 void test()
 {
 
-      //String test = httpGETRequest(serverName);
-      //Serial.println(test);
-//      for(int i = 0; i < 32; i++){
-//        for(int j = 0; j < 16; j++){
-//          leds[convertToLED(i, j)] = CRGB::White; 
-//          FastLED.show(); 
-//          delay(speedd/10);
-//          //String lit = GetPixelsLit();
-//          //httpPOST("http://68.183.25.122:3000/matrix", lit);
-//          Serial.println(convertToLED(i, j));
-//          //leds[convertToLED(i, j)] = CRGB::Black;
-//          //FastLED.show(); 
-//
-//          
-//          
-//        }
-//      }
-
-  int i = 16; // x coordinate
-  int j = 8; // y coordinate
-
-  while(1) // loop for analog joystick to be able to indefinitely move
-  {
-    unsigned char i;
-    for( i = 0; i < 4; i++) // getting input from arduino
-    {
-      pinvals[i] = digitalRead(pins[i]);
-      if(pinvals[i] == HIGH)
-      {
-        Serial.print(1);
-      } else if (pinvals[i] == LOW) {
-        Serial.print(0);
+      String test = httpGETRequest(serverName);
+      delay(500);
+      Serial.println(test);
+      for(int i = 0; i < 16; i++){
+        for(int j = 0; j < 8; j++){
+          leds[convertToLED(i, j)] = CRGB::White; 
+          FastLED.show(); 
+          //Serial.println(lit);
+          //leds[convertToLED(i, j)] = CRGB::Black;
+          //FastLED.show(); 
+        }
       }
-    } // for loop
-    
-    if(pinvals[4] == 0) // if pointer not meant to move
-    {
-      continue;
-    } else if (pinvals[4] == 1){
-
-      dir = pins[0]**2 + pins[1]*2 + pins[0];
-
-      switch(dir) // down right
-      {
-        case 
-      }
-      
-      
-    }
-    
-    delay(100); // delaying for 0.1 seconds
-  }
-  
+          String lit = GetPixelsLit();
+          httpPOST("http://68.183.25.122:3000/matrix", lit);
 }
 
   
