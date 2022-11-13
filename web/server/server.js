@@ -62,11 +62,11 @@ app.get("/time", (req, res) => {
 
 app.get("/start", (req, res) => {
   console.log("TEST SUCCESS");
-  if (startRound.get()) return res.send(resp);
+  //   if (startRound.get()) return res.send(resp);
 });
 
 app.get("/prompts", (req, res) => {
-  return res.send(generatePrompts());
+  return res.send(selectPrompt());
 });
 
 app.post("/matrix", (req, res) => {
@@ -199,21 +199,23 @@ function formatMessage(username, text) {
   return { username: username, text: text };
 }
 
-function selectPrompt() {}
-
-function generatePrompts() {
-  const numPrompts = 3;
-
-  const promptsCopy = [...prompts];
-  const generated = [];
-
-  for (let index = 0; index < numPrompts; index++) {
-    let i = Math.floor(Math.random() * promptsCopy.length);
-    const element = promptsCopy.splice(i, 1);
-    generated.push(element);
-  }
-
-  return generated;
+function selectPrompt() {
+  return prompts[Math.floor(Math.random() * prompts.length)];
 }
+
+// function generatePrompts() {
+//   const numPrompts = 3;
+
+//   const promptsCopy = [...prompts];
+//   const generated = [];
+
+//   for (let index = 0; index < numPrompts; index++) {
+//     let i = Math.floor(Math.random() * promptsCopy.length);
+//     const element = promptsCopy.splice(i, 1);
+//     generated.push(element);
+//   }
+
+//   return generated;
+// }
 
 httpServer.listen(process.env.PORT || 3000);
