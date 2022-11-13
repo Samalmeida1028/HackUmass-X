@@ -117,15 +117,7 @@ void setup() // sets up for wifi, fastLED, and OLED
 }
 
 
-String waitForPrompt(){
-  while(httpGET(serverName)== "{}"){ displayPrompt("WAITING"); delay(100);}
-  rst();
-  return getPrompt();
-}
 
-void resetLEDS(){
-  rst();
-}
 
 bool promptHasChanged(String prompt){
   return prompt != httpGET(serverName);
@@ -140,12 +132,14 @@ void loop() {
   while(!p){ // 
     draw();
     getButtonInputs();
-    count++;    
+    count++;  
+    if(count%40==0){
+      String litLeds = getPixelsLit();
+      httpPOST("http://68.183.25.122:3000/matrix",litLeds);  
+    }
     if(count > 80 ){
       count = 0;
       timeleft -= 4;
-      String litLeds = GetPixelsLit();
-      httpPOST("http://68.183.25.122:3000/matrix",litLeds);
       p = promptHasChanged(prompt);
     }
   }
