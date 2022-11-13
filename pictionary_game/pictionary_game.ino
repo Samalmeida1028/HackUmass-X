@@ -104,7 +104,7 @@ void setup()
 
 
 String waitForPrompt(){
-  while(httpGET(serverName) == "{}") displayPrompt("WAITING");
+  while(httpGET(serverName) == "{}"){ displayPrompt("WAITING") delay(100)};
   return httpGET(serverName);
 }
 
@@ -113,10 +113,11 @@ void resetLEDS(){
 }
 
 bool promptHasChanged(int count, String prompt){
-  if(count == 20){
+  if(count == 100){
     Serial.println(httpGET(serverName));
     return prompt != httpGET(serverName);
   }
+  return prompt; 
   
 }
 void loop() {
@@ -128,8 +129,10 @@ void loop() {
   while(!promptHasChanged(count, prompt)){
     draw();
     count++;    
-    if((count %= 20) == 0){
-      httpPOST("http://68.183.25.122:3000/matrix",GetPixelsLit());
+    if((count > 100 ){
+      count = 0;
+      String litLeds = GetPixelsLit();
+      httpPOST("http://68.183.25.122:3000/matrix",litLeds);
     }
   }
 }
