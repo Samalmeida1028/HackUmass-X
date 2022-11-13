@@ -14,12 +14,13 @@ const char* serverName = "http://68.183.25.122:3000/test";
 CRGB leds[NUM_LEDS];
 int speedd = 500;
   
-  
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
 void setup() { 
     Serial.begin(9600);
     FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS); 
   FastLED.setBrightness(10);
-    WiFi.begin(ssid, password);
+      
   Serial.println("Connecting");
   while(WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -42,6 +43,7 @@ void setup() {
     long HexRGB = ((long)leds[convertToLED(x,y)].r << 16) | ((long)leds[convertToLED(x,y)].g << 8 ) | (long)leds[convertToLED(x,y)].b; // get value and convert.
     String formatted = String(HexRGB, HEX);
     String zero = "000000";
+    if(formatted != "0"){
     int offset = 6-formatted.length();
     int temp = 0;
     while(temp < offset){
@@ -49,6 +51,7 @@ void setup() {
     }
     for(int i = temp; i<zero.length();i++){
       zero[i] = formatted[i-temp];
+    }
     }
     return zero;
   }
@@ -122,7 +125,7 @@ void httpPOST(const char* serverName, String payload) {
         for(int i = 0; i < 32; i++){
         for(int j = 0; j < 16; j++){
           String val = GetPixelVal(i,j);
-          if(val!="0"){
+          if(val!="000000"){
           String temp = "{\"hex\":\"#" + val + "\",\"coord\":{\"x\":\"" + String(i,DEC) + "\",\"y\":\"" + String(15-j,DEC) + "\"}},";
           jsonString += temp;
           }

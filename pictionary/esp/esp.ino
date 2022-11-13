@@ -171,6 +171,7 @@ void draw(){
 
 String GetPixelVal(int x, int y){
     long HexRGB = ((long)leds[convertToLED(x,y)].r << 16) | ((long)leds[convertToLED(x,y)].g << 8 ) | (long)leds[convertToLED(x,y)].b; // get value and convert.
+    
     return String(HexRGB, HEX);
   }
 
