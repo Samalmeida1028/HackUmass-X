@@ -6,6 +6,8 @@ Repository for our HackUmass-X Project!
     
 ## How the Code Works Together
 
+### Hardware
+
   There are two files that work together to bring Pictionary to life on the client side, which are pictionary_game.ino and joystick.ino.
   Joystick is uploaded on the Arduino Uno and takes the analog input from the joystick and converts the input to four digital outputs, where are sent 
   to D6, D7, D8, and D0 on the ESP8266. 
@@ -17,6 +19,10 @@ Repository for our HackUmass-X Project!
   (choosing their color at the bottom of the screen). The ESP8266 also emits a timer at the top, a line that gets shorter until it disappears when time runs out.
   All LED indexes that are not black (off) are sent to the server to be interpreted and put on display.
 
+### Server and client side
+    The server utilizes websockets to synchronize multiple clients in the game lobby. The websockets update the canvas display on the webpage based on the value of the LED matrix that was POST-ed to the server.
+    
+    The server tells the hardware when to reset and move to the next game round based on input from the client.
 ## Functions and Brief Description
 
 ### String httpGETRequest(const char* serverName)
