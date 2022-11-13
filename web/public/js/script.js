@@ -125,19 +125,17 @@ function updateCanvas(matrix) {
   ctx.beginPath();
 
   matrix.forEach((pixel) => {
-    ctx.rect(
-      pixel.coord.y * 40,
-      pixel.coord.x * 20,
-      canvas.height / 40,
-      canvas.width / 40
-    );
     if (pixel.hex !== "#ffffff") {
       ctx.fillStyle = pixel.hex;
     } else {
       ctx.fillStyle = "#000000";
     }
-    ctx.fill();
+    ctx.fillRect(
+      pixel.coord.y * 40,
+      pixel.coord.x * 20,
+      canvas.height / 40,
+      canvas.width / 40
+    );
   });
-  ctx.fill();
   ctx.closePath();
 }
