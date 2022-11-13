@@ -74,6 +74,8 @@ static const unsigned char PROGMEM logo_bmp[] =
 
 void loop()
 {
+  display.clearDisplay();
+  display.display();
   String prompt = getPrompt();
   Serial.println(prompt);
   while (prompt == "{}")
@@ -107,7 +109,7 @@ void loop()
       count = 0;
     }
     Serial.println(prompt);
-    display.clearDisplay();
+    displayPrompt(prompt);
     display.display();
   }
 }
