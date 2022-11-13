@@ -5,7 +5,8 @@ const startButton = document.getElementById("start-button");
 const timer = document.getElementById("timer");
 const restartButton = document.getElementById("restart-button");
 const userList = document.getElementById("users");
-const socket = io("ws://localhost:3000");
+// const socket = io("ws://68.183.25.122:3000");
+const socket = io("ws://68.183.25.122:3000");
 
 let username = undefined;
 
@@ -130,6 +131,12 @@ function updateCanvas(matrix) {
       canvas.height / 40,
       canvas.width / 40
     );
+    if (pixel.hex !== "#ffffff") {
+      ctx.fillStyle = pixel.hex;
+    } else {
+      ctx.fillStyle = "#000000";
+    }
+    ctx.fill();
   });
   ctx.fill();
   ctx.closePath();
