@@ -36,7 +36,7 @@ int pinvals[4];
 
 char request[] = "link";
 
-void setup() {
+void setup() { // initializing all pins used on Arduino
   // put your setup code here, to run once:
   Serial.begin(9600);
 
@@ -53,8 +53,6 @@ void loop() {
   // put your main code here, to run repeatedly:
   xval = analogRead(joyX);
   yval = analogRead(joyY);
-  Serial.println(xval);
-  Serial.println(yval);
   
   pinvals[3] = 1;
 
@@ -63,7 +61,7 @@ void loop() {
   {
     pinvals[3] = 0; // player not touching joystick
   }
-  // left
+  // right
   else if((xval < 800 && xval > 200) && (yval < 200))
   {
     // 2
@@ -71,23 +69,23 @@ void loop() {
     pinvals[1] = 1;
     pinvals[2] = 0;
   }
-  // Straight down
-  else if((xval < 50) && (yval < 530 && yval > 470))
+  // up
+  else if((xval < 100) && (yval < 530 && yval > 470))
   {
     //0
     pinvals[0] = 0;
     pinvals[1] = 0;
     pinvals[2] = 0;
   }
-  // Down left
-  else if((xval < 50) && (yval < 50))
+  // up right
+  else if((xval < 500) && (yval < 50))
   {
     // 1
     pinvals[0] = 0;
     pinvals[1] = 0;
     pinvals[2] = 1;
   }
-  // up left
+  // down right
   else if((xval > 1000) && (yval < 50))
   {
     // 3
@@ -95,15 +93,15 @@ void loop() {
     pinvals[1] = 1;
     pinvals[2] = 1;
   }
-  // up
-  else if((xval > 1000) && (yval < 530 && yval > 470))
+  // Straight down
+  else if((xval > 900) && (yval < 530 && yval > 470))
   {
     // 4
     pinvals[0] = 1;
     pinvals[1] = 0;
     pinvals[2] = 0;
   }
-  // up right
+  // down left
   else if((xval > 1000) && (yval > 1000))
   {
     // 5
@@ -111,21 +109,23 @@ void loop() {
     pinvals[1] = 0;
     pinvals[2] = 1;
   }
-  // right
-  else if((yval > 1000) && (xval < 700 && xval > 300))
+  // left
+  else if((yval > 900) && (xval < 700 && xval > 300))
   {
     // 6
     pinvals[0] = 1;
     pinvals[1] = 1;
     pinvals[2] = 0;
   }
-  // down right
+  // up left
   else if((xval < 50) && (yval > 1000))
   {
     // 7
     pinvals[0] = 1;
     pinvals[1] = 1;
     pinvals[2] = 1;
+  } else {
+    pinvals[3] = 0;
   }
   
 
@@ -134,6 +134,7 @@ void loop() {
   unsigned char i;
   for(i = 0; i < 4; i++)
   {
+    Serial.print(pinvals[i]);
     if(pinvals[i] == 0)
     {
       digitalWrite(pins[i], LOW);
