@@ -7,24 +7,37 @@
     <link rel="stylesheet" href="../css/style.css" />
     <script type="module" src="../js/script.js"></script>
   </head>
-  <body>
-    <h1>Pictionary</h1>
-    <div id="timer"></div>
-    <canvas id="canvas" width="640" height="640"></canvas>
-    <div id="users"></div>
-    <div id="chat-box"></div>
-    <form id="guess-form">
-      <input
-        type="text"
-        id="guess"
-        type="text"
-        placeholder="Enter Guess"
-        required
-        autocomplete="off"
-      />
-      <button id="guess-button">Guess</button>
-    </form>
-    <button id="start-button">Start Round</button>
-    <button id="restart-button">End Round</button>
+  <body class="doodle">
+    <div class="header">
+      <h2>Pictionary</h2>
+      <div id="timer"></div>
+    </div>
+
+    <div class="row">
+      <div class="column side" style="background-color: #aaa">
+        <div id="users"></div>
+      </div>
+      <div class="column middle" style="background-color: #bbb">
+        <canvas id="canvas" width="640" height="640"></canvas>
+      </div>
+      <div class="column side" style="background-color: #ccc">
+        <div id="chat-box"></div>
+      </div>
+    </div>
+    <div class="footer">
+      <form id="guess-form">
+        <input
+          type="text"
+          id="guess"
+          type="text"
+          placeholder="Enter Guess"
+          required
+          autocomplete="off"
+        />
+        <button id="guess-button" type="button">Guess</button>
+      </form>
+      <button id="start-button">Start Round</button>
+      <button id="restart-button">End Round</button>
+    </div>
   </body>
 </html>
