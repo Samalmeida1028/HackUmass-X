@@ -299,14 +299,17 @@ void httpPOST(const char* serverName, String payload) {
     if(onoffbutton && drawerasebutton) // if in draw
     {
       leds[convertToLED(x, y)] = CRGB::White; 
-      if(prevx != x || prevy != y)
+      if(prevx != x || prevy != y) // making sure to not overwrite white
       {
         leds[convertToLED(prevx, prevy)] = current; 
       }
       
     } else if (onoffbutton && !drawerasebutton){ // if erasing
       leds[convertToLED(x, y)] = CRGB::Magenta; 
-      leds[convertToLED(prevx, prevy)] = CRGB::Black; 
+      if(prevx != x || prevy != y) // making sure to not overwrite magenta
+      {
+        leds[convertToLED(prevx, prevy)] = CRGB::Black; 
+      }
       
     } else if (!onoffbutton) { // if user does not want to draw or erase restore previous color behind pointer
       leds[convertToLED(prevx, prevy)] = prevcolor;
