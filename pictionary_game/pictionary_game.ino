@@ -99,23 +99,54 @@ void setup() // sets up for wifi, fastLED, and OLED
   }
   display.clearDisplay();
   display.display();
+  
+  // initializing all necessary pins
+  unsigned char k;
+  for( k = 0; k < 4; k++) // initializing pins as input
+  {
+    pinMode(pins[k], INPUT);
+  }
+  pinMode(onoff, INPUT);
+  pinMode(drawerase, INPUT);
+  pinMode(rstbuttonpin, INPUT);
+
+  // internal pullup resistor for buttons
+  digitalWrite(onoff, HIGH);
+  digitalWrite(drawerase, HIGH);
+  digitalWrite(rstbuttonpin, HIGH);
 }
 
-void loop()
-{
-String prompt = waitForPrompt();
+
+String waitForPrompt(){
+  while(httpGET(serverName)== "{}"){ displayPrompt("WAITING"); delay(100);}
+  rst();
+  return getPrompt();
+}
+
+void resetLEDS(){
+  rst();
+}
+
+bool promptHasChanged(String prompt){
+  return prompt != httpGET(serverName);
+  
+}
+void loop() {
+  String prompt = waitForPrompt();
   displayPrompt(prompt);
   // jay told me to do this
   int count = 0;
-  while (!promptHasChanged(count, prompt))
-  {
+  bool p = 0;
+  while(!p){ // 
     draw();
-    count++;
-    if (count > 100)
-    {
+    getButtonInputs();
+    count++;    
+    if(count > 80 ){
       count = 0;
-      String litLeds = getPixelsLit();
-      httpPOST("http://68.183.25.122:3000/matrix", litLeds);
+      timeleft -= 4;
+      String litLeds = GetPixelsLit();
+      httpPOST("http://68.183.25.122:3000/matrix",litLeds);
+      p = promptHasChanged(prompt);
     }
   }
 }
@@ -171,6 +202,7 @@ void httpPOST(const char *serverName, String payload)
 
 void draw()
 {
+  timer();
 
   CRGB colors[6] = {CRGB::White, CRGB::Red, CRGB::Green, CRGB::Blue, CRGB::Yellow, CRGB::Yellow};
   // note: extra yellow added at end as with current conditional to get color would result in error
@@ -186,7 +218,7 @@ void draw()
     }
     leds[convertToLED(31, k)] = colors[l];
   }
-  leds[convertToLED(31, 15)] = colors[l];
+  leds[convertToLED(31, 15)] = colors[l]; // adding final box above loop didn't get
 
   prevy = y;
   prevx = x;
@@ -201,24 +233,24 @@ void draw()
 
   if (pinvals[3] == 1) // if user is moving analog joystick, find new x and y values
   {
-    getxdir(val);
-    getydir(val);
+    getXDir(val);
+    getYDir(val);
   } // if statement
 
-  checklimits(); // correcting x and y if they are past thresholds of led matrix
+  checkLimits(); // correcting x and y if they are past thresholds of led matrix
 
   if (x == 31) // if user is selecting a color
   {
     current = colors[(int)y / 3];
   }
 
-  handlepointer();
+  handlePointer(); // printing cursor and affecting LEDs around it
   FastLED.show();
 
-  delay(50);
+  delay(35);
 }
 
-void checklimits() // making sure x and y are not going past borders
+void checkLimits() // making sure x and y are not going past borders
 {
   if (x < 0)
   {
@@ -238,7 +270,7 @@ void checklimits() // making sure x and y are not going past borders
   }
 }
 
-void handlepointer() // function handles pointer if erase, draw, or none of the above
+void handlePointer() // function handles pointer if erase, draw, or none of the above
 {
   if (onoffbutton && drawerasebutton) // if in draw
   {
@@ -264,7 +296,7 @@ void handlepointer() // function handles pointer if erase, draw, or none of the 
   }
 }
 
-void getButtonInputs()
+void getButtonInputs() // get buttons if user presses them
 {
   if (!digitalRead(onoff)) // if on off button pressed
   {
@@ -392,8 +424,11 @@ void displayPrompt(String inputString)
 
 void rst() // function to reset all squares
 {
-  memset(&leds, CRGB::Black, 32 * 16);
-  FastLED.show();
+  for(int i = 0; i < 32; i++){
+    for(int j = 0; j < 16; j++){
+      leds[convertToLED(i, j)] = CRGB::Black;
+    }
+  }
   timeleft = 60;
 }
 
@@ -412,7 +447,7 @@ void timer() // prints how much time is left to led matrix
   }
 }
 
-void getxdir(int val) // changing x depending on direction
+void getXDir(int val) // changing x depending on direction
 {
   if (val == 7 || val == 1 || val == 0)
   {
@@ -424,7 +459,7 @@ void getxdir(int val) // changing x depending on direction
   }
 }
 
-void getydir(int val) // changes y depending on direction
+void getYDir(int val) // changes y depending on direction
 {
   if (val == 3 || val == 2 || val == 1)
   {
