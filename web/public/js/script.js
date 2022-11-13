@@ -7,7 +7,7 @@ const restartButton = document.getElementById("restart-button");
 const userList = document.getElementById("users");
 const socket = io("ws://localhost:3000");
 
-let username = localStorage.getItem("username");
+let username = undefined;
 
 if (!username) {
   username = window.prompt("Enter your username", "Username");
@@ -15,9 +15,8 @@ if (!username) {
   if (!username || username === "") {
     username = "User";
   }
-
-  //   localStorage.setItem("username", username);
 }
+
 const room = "baseRoom";
 let started = false;
 
@@ -34,6 +33,7 @@ socket.on("started", () => {
 });
 socket.on("timer", (resp) => {
   timer.innerHTML = String(resp.timeLeft);
+  updateCanvas(resp.matrix);
 });
 
 socket.on("moderator-message", (message) => {
@@ -105,7 +105,6 @@ function outputModMessage(message) {
   document.getElementById("chat-box").appendChild(div);
 }
 
-// Add users to DOM
 function outputUsers(users) {
   userList.innerHTML = "";
   users.forEach((user) => {
@@ -113,4 +112,25 @@ function outputUsers(users) {
     li.innerText = user.username;
     userList.appendChild(li);
   });
+}
+
+function updateCanvas(matrix) {
+  if (matrix === undefined) {
+    return;
+  }
+
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  ctx.beginPath();
+
+  matrix.forEach((pixel) => {
+    ctx.rect(
+      pixel.coord.y * 40,
+      pixel.coord.x * 20,
+      canvas.height / 40,
+      canvas.width / 40
+    );
+  });
+  ctx.fill();
+  ctx.closePath();
 }
