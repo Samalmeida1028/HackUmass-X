@@ -1,0 +1,18 @@
+{
+  "name": "hackumass_x",
+  "version": "1.0.0",
+  "description": "Pictionary style game for HackUmass X",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "type": "module",
+  "author": "Caleb Scopetski, Patrick Walsh, Samuel Almeida",
+  "dependencies": {
+    "body-parser": "^1.20.1",
+    "express": "^4.18.2",
+    "socket.io": "^4.5.3",
+    "socket.io-client": "^4.5.3",
+    "socketio": "^1.0.0"
+  }
+}

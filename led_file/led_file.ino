@@ -83,16 +83,9 @@ void httpPOST(const char* serverName, String payload) {
   http.addHeader("Content-Type", "text/plain");
 
   // Send HTTP POST request
-  int httpResponseCode = http.POST(payload);
+  http.POST(payload);
   
 
-  if (httpResponseCode>0) {
-    Serial.print("HTTP Response code: ");
-  }
-  else {
-    Serial.print("Error code: ");
-    Serial.println(httpResponseCode);
-  }
   http.end();
 
 }
@@ -114,38 +107,35 @@ void httpPOST(const char* serverName, String payload) {
   }
 
     String GetPixelsLit(){
-        String jsonString = "{pixels:[";
+        String jsonString = "[";
         
         for(int i = 0; i < 32; i++){
         for(int j = 0; j < 16; j++){
           String val = GetPixelVal(i,j);
           if(val!="0"){
-          String temp = "{hex:" + val + ",coord:{x:" + String(i,DEC) + ",y:" + String(j,DEC) + "}},";
+          String temp = "{\"hex\":\"$" + val + "\",\"coord\":{\"x\":\"" + String(i,DEC) + "\",\"y\":\"" + String(15-j,DEC) + "\"}},";
           jsonString += temp;
           }
         }
         }
         int len = jsonString.length()-1;
         jsonString.remove(len);
-        jsonString = jsonString + "]}";
+        jsonString = jsonString + "]";
         return jsonString;
   }
 
 void test()
 {
-
-      String test = httpGETRequest(serverName);
       delay(500);
-      Serial.println(test);
       for(int i = 0; i < 16; i++){
         for(int j = 0; j < 8; j++){
           leds[convertToLED(i, j)] = CRGB::White; 
-          FastLED.show(); 
           //Serial.println(lit);
           //leds[convertToLED(i, j)] = CRGB::Black;
           //FastLED.show(); 
         }
       }
+          FastLED.show(); 
           String lit = GetPixelsLit();
           httpPOST("http://68.183.25.122:3000/matrix", lit);
 }
