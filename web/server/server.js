@@ -144,6 +144,11 @@ io.on("connection", (socket) => {
               timeLeft: timeLeft,
               matrix: matrix,
             });
+            io.to(user.room).emit("moderator-message", "Round Over!");
+            io.to(user.room).emit(
+              "moderator-message",
+              "The word was " + prompt
+            );
           }
         }
 
