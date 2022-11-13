@@ -35,6 +35,8 @@ int drawerasebutton = 1; // set to draw initially (toggle)
 
 int rstbutton = 0;
 
+int multiplier = 1;
+
 int y = 8;
 int x = 16;
 int count = 0;
@@ -140,12 +142,15 @@ void loop() {
   while(!p){ // 
     draw();
     getButtonInputs();
-    count++;    
-    if(count > 80 ){
+    count++;  
+    if((count/multiplier)%40==0){
+      String litLeds = getPixelsLit();
+      httpPOST("http://68.183.25.122:3000/matrix",litLeds);  
+    }
+    if(count > 100)
+    {timeleft -= 5;}
+    if(count/multiplier > 100 ){
       count = 0;
-      timeleft -= 4;
-      String litLeds = GetPixelsLit();
-      httpPOST("http://68.183.25.122:3000/matrix",litLeds);
       p = promptHasChanged(prompt);
     }
   }
@@ -247,7 +252,7 @@ void draw()
   handlePointer(); // printing cursor and affecting LEDs around it
   FastLED.show();
 
-  delay(35);
+  delay(35*multiplier);
 }
 
 void checkLimits() // making sure x and y are not going past borders
@@ -288,8 +293,15 @@ void handlePointer() // function handles pointer if erase, draw, or none of the 
       leds[convertToLED(prevx, prevy)] = CRGB::Black;
     }
   }
-  else if (!onoffbutton)
+  else if (!onoffbutton && drawerasebutton) // fast precision
   { // if user does not want to draw or erase restore previous color behind pointer
+    multiplier = 1; // making movements back to normal
+    leds[convertToLED(prevx, prevy)] = prevcolor;
+    prevcolor = leds[convertToLED(x, y)];
+    leds[convertToLED(x, y)] = current;
+  }
+  else if (!onoffbutton && !drawerasebutton){
+    multiplier = 4; // making movements precise
     leds[convertToLED(prevx, prevy)] = prevcolor;
     prevcolor = leds[convertToLED(x, y)];
     leds[convertToLED(x, y)] = current;
@@ -382,15 +394,15 @@ String getPixelsLit() // returns all lit pixels in the graph
 //##MISC FUNCTIONS##
 
 
-String waitForPrompt()
-{
-  while (getPrompt() == "{}")// while prompt is equal to the original string in the http get request wait
-  {
-    displayPrompt("WAITING");// displays waiting on the OLED
-    delay(100);
-  };
-  return getPrompt(); // gets prompt from the 
-}
+//String waitForPrompt()
+//{
+//  while (getPrompt() == "{}")// while prompt is equal to the original string in the http get request wait
+//  {
+//    displayPrompt("WAITING");// displays waiting on the OLED
+//    delay(100);
+//  };
+//  return getPrompt(); // gets prompt from the 
+//}
 
 
 bool promptHasChanged(int count, String prompt) 
