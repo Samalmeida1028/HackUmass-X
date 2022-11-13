@@ -40,7 +40,17 @@ void setup() {
 
   String GetPixelVal(int x, int y){
     long HexRGB = ((long)leds[convertToLED(x,y)].r << 16) | ((long)leds[convertToLED(x,y)].g << 8 ) | (long)leds[convertToLED(x,y)].b; // get value and convert.
-    return String(HexRGB, HEX);
+    String formatted = String(HexRGB, HEX);
+    String zero = "000000";
+    int offset = 6-formatted.length();
+    int temp = 0;
+    while(temp < offset){
+      temp++;
+    }
+    for(int i = temp; i<zero.length();i++){
+      zero[i] = formatted[i-temp];
+    }
+    return zero;
   }
 
 
@@ -113,7 +123,7 @@ void httpPOST(const char* serverName, String payload) {
         for(int j = 0; j < 16; j++){
           String val = GetPixelVal(i,j);
           if(val!="0"){
-          String temp = "{\"hex\":\"$" + val + "\",\"coord\":{\"x\":\"" + String(i,DEC) + "\",\"y\":\"" + String(15-j,DEC) + "\"}},";
+          String temp = "{\"hex\":\"#" + val + "\",\"coord\":{\"x\":\"" + String(i,DEC) + "\",\"y\":\"" + String(15-j,DEC) + "\"}},";
           jsonString += temp;
           }
         }
@@ -129,7 +139,7 @@ void test()
       delay(500);
       for(int i = 0; i < 16; i++){
         for(int j = 0; j < 8; j++){
-          leds[convertToLED(i, j)] = CRGB::White; 
+          leds[convertToLED(i, j)] = CRGB::Green; 
           //Serial.println(lit);
           //leds[convertToLED(i, j)] = CRGB::Black;
           //FastLED.show(); 
@@ -137,7 +147,7 @@ void test()
       }
           FastLED.show(); 
           String lit = GetPixelsLit();
-          httpPOST("http://68.183.25.122:3000/matrix", lit);
+          //httpPOST("http://68.183.25.122:3000/matrix", lit);
 }
 
   
