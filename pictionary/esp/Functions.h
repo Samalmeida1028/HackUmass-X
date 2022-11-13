@@ -21,3 +21,5 @@ void getydir(int val);
 void checklimits();
 
 void handlepointer();
+
+void getButtonInputs();

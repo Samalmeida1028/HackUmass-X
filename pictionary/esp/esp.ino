@@ -18,6 +18,7 @@ const char* serverName = "http://68.183.25.122:3000/matrix";
 
 #define onoff 0
 #define drawerase 2
+#define rstbuttonpin 9
 
 // Define Global Variables
 int pins[4] = {12, 13, 15, 16};
@@ -26,6 +27,8 @@ int pinvals[4] = {0};
 int onoffbutton = 0; // draw is off initially (toggle)
 
 int drawerasebutton = 1; // set to draw initially (toggle)
+
+int rstbutton = 0;
 
 int y = 8;
 int x = 16;
@@ -56,9 +59,13 @@ void setup()
   }
   pinMode(onoff, INPUT);
   pinMode(drawerase, INPUT);
+  pinMode(rstbuttonpin, INPUT);
 
+  // internal pullup resistor for buttons
   digitalWrite(onoff, HIGH);
   digitalWrite(drawerase, HIGH);
+  digitalWrite(rstbuttonpin, HIGH);
+  
     WiFi.begin(ssid, password);
   Serial.println("Connecting");
   while(WiFi.status() != WL_CONNECTED) {
@@ -122,16 +129,6 @@ void draw(){
   int val = pinvals[0]*4 + pinvals[1]*2 + pinvals[2];
   //Serial.print(val);
 
-  if(!digitalRead(onoff)) // if on off button pressed
-  {
-    onoffbutton = !onoffbutton;
-    delay(50);
-  }
-  if(!digitalRead(drawerase)) // if draw erase button pressed
-  {
-    drawerasebutton = !drawerasebutton;
-    delay(50);
-  }
   if (pinvals[3] == 1) // if user is moving analog joystick, find new x and y values
   {
     getxdir(val);
@@ -237,12 +234,9 @@ void httpPOST(const char* serverName, String payload) {
 
   void rst() // function to reset all squares
   {
-    for(int i = 0; i < 32; i++){
-      for(int j = 0; j < 16; j++){
-        leds[convertToLED(i, j)] = CRGB::Black;
-      }
-    }
+    memset(&leds, CRGB::Black, 32*16);
     FastLED.show(); 
+    timeleft = 60;
   }
 
   void timer() // prints how much time is left to led matrix
@@ -305,10 +299,13 @@ void httpPOST(const char* serverName, String payload) {
     if(onoffbutton && drawerasebutton) // if in draw
     {
       leds[convertToLED(x, y)] = CRGB::White; 
-      leds[convertToLED(prevx, prevy)] = current; 
+      if(prevx != x || prevy != y)
+      {
+        leds[convertToLED(prevx, prevy)] = current; 
+      }
       
     } else if (onoffbutton && !drawerasebutton){ // if erasing
-      leds[convertToLED(x, y)] = CRGB::White; 
+      leds[convertToLED(x, y)] = CRGB::Magenta; 
       leds[convertToLED(prevx, prevy)] = CRGB::Black; 
       
     } else if (!onoffbutton) { // if user does not want to draw or erase restore previous color behind pointer
@@ -318,11 +315,30 @@ void httpPOST(const char* serverName, String payload) {
     }
   }
 
+  void getButtonInputs()
+  {
+    if(!digitalRead(onoff)) // if on off button pressed
+    {
+      onoffbutton = !onoffbutton;
+      delay(200);
+    }
+    if(!digitalRead(drawerase)) // if draw erase button pressed
+    {
+      drawerasebutton = !drawerasebutton;
+      delay(200);
+    }
+    if(!digitalRead(rstbuttonpin))
+    {
+      rst();
+    }
+  }
+
 
   void loop()
   {
   
   draw();
+  getButtonInputs();
   count++;
   if(count>20){
     //char payload[] = httpGETRequest(serverName); // getting how much time is left from server
