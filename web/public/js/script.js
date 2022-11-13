@@ -130,6 +130,12 @@ function updateCanvas(matrix) {
       canvas.height / 40,
       canvas.width / 40
     );
+    if (pixel.coord.hex !== "$ffffff") {
+      ctx.fillStyle = pixel.coord.hex;
+    } else {
+      ctx.fillStyle = "$000000";
+    }
+    ctx.fill();
   });
   ctx.fill();
   ctx.closePath();
