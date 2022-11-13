@@ -108,6 +108,7 @@ io.on("connection", (socket) => {
 
     if (!startRound.get(user.room)) {
       io.to(user.room).emit("moderator-message", "Round Starting");
+      matrix = [];
       prompt = selectPrompt();
       startRound.set(user.room, true);
       const drawer = selectDrawer(user.room);
