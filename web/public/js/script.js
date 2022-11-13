@@ -4,8 +4,9 @@ const guessForm = document.getElementById("guess-form");
 const startButton = document.getElementById("start-button");
 const timer = document.getElementById("timer");
 const restartButton = document.getElementById("restart-button");
+const nextButton = document.getElementById("next-button");
 const userList = document.getElementById("users");
-// const socket = io("ws://68.183.25.122:3000");
+// const socket = io("ws://localhost:3000");
 const socket = io("ws://68.183.25.122:3000");
 
 let username = undefined;
@@ -30,8 +31,14 @@ socket.on("roomUsers", ({ users }) => {
 socket.on("started", () => {
   startButton.disabled = true;
   started = true;
-  //   startTimer();
 });
+
+socket.on("round-over", (resp) => {
+  startButton.disabled = false;
+  startButton.innerHTML = "Next Round";
+  started = false;
+});
+
 socket.on("timer", (resp) => {
   timer.innerHTML = String(resp.timeLeft);
   updateCanvas(resp.matrix);
@@ -57,7 +64,6 @@ startButton.addEventListener("click", (e) => {
   e.preventDefault();
   if (!started) {
     console.log("Start");
-
     socket.emit("startRound");
   } else {
     startButton.disabled = true;

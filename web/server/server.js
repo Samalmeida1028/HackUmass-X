@@ -16,9 +16,25 @@ import {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 let matrix;
-let timeLeft = 60;
+const totalTime = 10;
+const prompts = [
+  "dog",
+  "cat",
+  "tree",
+  "ball",
+  "man",
+  "square",
+  "egg",
+  "stick",
+  "sun",
+  "earth",
+  "house",
+  "fish",
+  "pizza",
+];
+let timeLeft = totalTime;
 const startRound = new Map();
-
+const room = "baseRoom";
 let prompt = "";
 const app = express();
 
@@ -36,17 +52,25 @@ app.get("/", (req, res) => {
   res.sendFile(resolve(__dirname, "../public/html/index.html"));
 });
 
-app.get("/test", (req, res) => {
-  console.log("TEST SUCCESS");
+// app.get("/time", (req, res) => {
+//   console.log("TEST SUCCESS");
 
-  const resp = { name: "Ballmeida", role: "bozo" };
+//   const resp = { time: 49 };
 
-  return res.send(resp);
-});
+//   return res.send(resp);
+// });
 
 app.get("/start", (req, res) => {
-  console.log("TEST SUCCESS");
-  if (startRound.get()) return res.send(resp);
+  console.log("START");
+  if (startRound.get(room)) {
+    return res.send(prompt ? prompt : "ERROR");
+  } else {
+    return res.status(400).send("Not started");
+  }
+});
+
+app.get("/prompts", (req, res) => {
+  return res.send();
 });
 
 app.post("/matrix", (req, res) => {
@@ -70,15 +94,14 @@ io.on("connection", (socket) => {
 
   socket.on("startRound", () => {
     const user = getCurrentUser(socket.id);
-    // console.log(user);
+    console.log("starting");
     if (!startRound.get(user.room)) {
       socket.broadcast
         .to(user.room)
         .emit("moderator-message", "Round Starting");
+      prompt = selectPrompt();
       startRound.set(user.room, true);
       const drawer = selectDrawer(user.room);
-
-      const prompt = selectPrompt();
 
       if (drawer) {
         socket.broadcast
@@ -93,15 +116,18 @@ io.on("connection", (socket) => {
       io.to(user.room).emit("started");
       startTimer();
       function startTimer() {
-        timeLeft = 60;
+        timeLeft = totalTime;
+
         function countdown() {
           timeLeft--;
           io.to(user.room).emit("timer", {
-            timeLeft: timeLeft,
+            timeLeft: timeLeft >= 0 ? timeLeft : 0,
             matrix: matrix,
           });
           if (timeLeft > 0) {
             setTimeout(countdown, 1000);
+          } else {
+            startRound.set(user.room, false);
             io.to(user.room).emit("round-over", {
               timeLeft: timeLeft,
               matrix: matrix,
@@ -142,6 +168,7 @@ io.on("connection", (socket) => {
 
   socket.on("restart", () => {
     console.log("restart");
+    timeLeft = 0;
   });
 
   socket.on("disconnect", () => {
@@ -176,7 +203,22 @@ function formatMessage(username, text) {
 }
 
 function selectPrompt() {
-  return "dog";
+  return prompts[Math.floor(Math.random() * prompts.length)];
 }
+
+// function generatePrompts() {
+//   const numPrompts = 3;
+
+//   const promptsCopy = [...prompts];
+//   const generated = [];
+
+//   for (let index = 0; index < numPrompts; index++) {
+//     let i = Math.floor(Math.random() * promptsCopy.length);
+//     const element = promptsCopy.splice(i, 1);
+//     generated.push(element);
+//   }
+
+//   return generated;
+// }
 
 httpServer.listen(process.env.PORT || 3000);
