@@ -12,7 +12,7 @@
 #define while(a) while((yield(),a))
 #define FASTLED_ESP8266_D1_PIN_ORDER
 #define NUM_LEDS 512
-#define DATA_PIN 5
+#define DATA_PIN 14
 CRGB leds[NUM_LEDS];
 
 const char* ssid = "NoSignal";  
@@ -26,6 +26,9 @@ const char* serverName = "http://68.183.25.122:3000/start";
 // Define Global Variables
 int pins[4] = {12, 13, 15, 16};
 int pinvals[4] = {0};
+
+String lastPrompt = "{}";
+
 
 int onoffbutton = 0; // draw is off initially (toggle)
 
@@ -75,30 +78,37 @@ static const unsigned char PROGMEM logo_bmp[] =
 
 
 void loop() {
-  display.clearDisplay();
   String prompt = getPrompt();
-  Serial.println(prompt);
-  while(prompt == "{}"){
-  prompt = getPrompt();
-  }
-  Serial.println(prompt);
-  display.clearDisplay();
-  display.display();
-  displayPrompt(prompt);
-  String temp = prompt;
-  while(prompt = temp){
-  prompt = getPrompt();
-  draw();
-  getButtonInputs();
-  count++;
-  if(count>20){
-    //char payload[] = httpGETRequest(serverName); // getting how much time is left from server
-    timeleft -= 1;
-    String litLeds = GetPixelsLit();
-    httpPOST(serverName,litLeds);
-    count = 0;
+  if (prompt != lastPrompt)
+  {
+    display.clearDisplay();
+    String prompt = getPrompt();
+    Serial.println(prompt);
+    while(prompt == "{}"){
+      prompt = getPrompt();
     }
+    Serial.println(prompt);
+    display.clearDisplay();
+    display.display();
   }
+  else{
+    
+    draw();
+    getButtonInputs();
+    count++;
+    if(count>20){
+      prompt = getPrompt();
+      displayPrompt(prompt);
+      //char payload[] = httpGETRequest(serverName); // getting how much time is left from server
+      timeleft -= 1;
+      String litLeds = GetPixelsLit();
+      httpPOST(serverName,litLeds);
+      count = 0;
+    }
+    lastPrompt = prompt;
+    
+  }
+  
 }
 
 
@@ -300,9 +310,21 @@ void checklimits() // making sure x and y are not going past borders
       
     } else if (onoffbutton && !drawerasebutton){ // if erasing
       leds[convertToLED(x, y)] = CRGB::Magenta; 
-      leds[convertToLED(prevx, prevy)] = CRGB::Black; 
+      if(prevx != x || prevy != y) // making sure to not overwrite magenta
+      {
+        leds[convertToLED(prevx, prevy)] = CRGB::Black; 
+      }
       
     } else if (!onoffbutton) { // if user does not want to draw or erase restore previous color behind pointer
+      Serial.print(x);
+      Serial.print(" ");
+      Serial.print(y);
+      Serial.print(" | ");
+      Serial.print(prevx);
+      Serial.print(" ");
+      Serial.print(prevy);
+      Serial.print("\n");
+      
       leds[convertToLED(prevx, prevy)] = prevcolor;
       prevcolor = leds[convertToLED(x, y)];
       leds[convertToLED(x, y)] = current;
