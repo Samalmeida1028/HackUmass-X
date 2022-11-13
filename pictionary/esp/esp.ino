@@ -34,6 +34,8 @@ int prevx, prevy;
 
 CRGB leds[NUM_LEDS];
 
+CRGB current = CRGB::White; // current color
+
 // End Global Variables
 
 
@@ -85,6 +87,13 @@ int convertToLED (int x, int y){
 }
 
 void draw(){
+
+  // adding colors to end of screen
+  leds[convertToLED(31, 12)] = CRGB::White;
+  leds[convertToLED(31, 13)] = CRGB::Red;
+  leds[convertToLED(31, 14)] = CRGB::Green;
+  leds[convertToLED(31, 15)] = CRGB::Blue;
+  
   prevx = x;
   prevy = y;
   unsigned char k;
@@ -100,10 +109,12 @@ void draw(){
   if(!digitalRead(onoff)) // if on off button pressed
   {
     onoffbutton = !onoffbutton;
+    delay(20);
   }
   if(!digitalRead(drawerase)) // if draw erase button pressed
   {
     drawerasebutton = !drawerasebutton;
+    delay(20);
   }
   if (pinvals[3] == 1)
   {
@@ -145,27 +156,46 @@ void draw(){
   {
     y = 15;
   }
+
+  if(x == 31 && y == 12) // player wants to be White
+  {
+    current = CRGB::White;
+  }
+  else if(x == 31 && y == 13) // player wants to be red
+  {
+    current = CRGB::Red;
+  }
+  else if(x == 31 && y == 14) // player wants to be green
+  {
+    current = CRGB::Green;
+  }
+  else if(x == 31 && y == 15) // player wants to be blue
+  {
+    current = CRGB::Blue;
+  }
   
   if(onoffbutton && drawerasebutton) // if in draw
   {
     leds[convertToLED(x, y)] = CRGB::White; 
+    leds[convertToLED(prevx, prevy)] = current; 
     
   } else if (onoffbutton && !drawerasebutton){ // if erasing
-    leds[convertToLED(x, y)] = CRGB::Black; 
+    leds[convertToLED(x, y)] = CRGB::White; 
+    leds[convertToLED(prevx, prevy)] = CRGB::Black; 
     
   } else if (!onoffbutton) { // if user does not want to draw or erase
-    leds[convertToLED(x, y)] = CRGB::White;
+    leds[convertToLED(x, y)] = current;
     if(prevx != x || prevy != y)
     {
       leds[convertToLED(prevx, prevy)] = CRGB::Black;
     }
   } else {
-    leds[convertToLED(x, y)] = CRGB::White;
+    leds[convertToLED(x, y)] = current;
   }
   FastLED.show();
   
 
-  delay(100);
+  delay(50);
 }
 
 
@@ -228,7 +258,7 @@ void httpPOST(const char* serverName, String payload) {
         for(int j = 0; j < 16; j++){
           String val = GetPixelVal(i,j);
           if(val!="0"){
-          String temp = "{\"hex\":\"$" + val + "\",\"coord\":{\"x\":\"" + String(i,DEC) + "\",\"y\":\"" + String(15-j,DEC) + "\"}},";
+          String temp = "{\"hex\":\"#" + val + "\",\"coord\":{\"x\":\"" + String(i,DEC) + "\",\"y\":\"" + String(15-j,DEC) + "\"}},";
           jsonString += temp;
           }
         }
@@ -246,8 +276,8 @@ void httpPOST(const char* serverName, String payload) {
   
   draw();
   count++;
-  String litLeds = GetPixelsLit();
   if(count>20){
+  String litLeds = GetPixelsLit();
   httpPOST(serverName,litLeds);
   count = 0;
   }
