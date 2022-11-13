@@ -378,6 +378,7 @@ String getPixelsLit() // returns all lit pixels in the graph
 
 String waitForPrompt()
 {
+  rst();
   while (getPrompt() == "{}")// while prompt is equal to the original string in the http get request wait
   {
     displayPrompt("WAITING");// displays waiting on the OLED
